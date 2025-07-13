@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Aora",
-    "slug": "aora",
+    "name": "uplook",
+    "slug": "uplook",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "aora",
+    "scheme": "uplook",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -17,7 +17,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "static"
     },
     "plugins": [
       "expo-router",
