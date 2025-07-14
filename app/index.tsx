@@ -1,7 +1,7 @@
-import React from 'react';
-import { Redirect } from 'expo-router';
+import React from "react";
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  // Redirect to the welcome screen
-  return <Redirect href="/welcome" />;
+  // Redirect to the tabs layout
+  return <Redirect href="/(tabs)/home" />;
 }
