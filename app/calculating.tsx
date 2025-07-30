@@ -9,7 +9,6 @@ export default function CalculatingScreen() {
   const [isDone, setIsDone] = useState(false);
 
   useEffect(() => {
-    // Simulate calculation progress
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 95) {
@@ -42,7 +41,6 @@ export default function CalculatingScreen() {
           </Text>
           
           <View className="w-16 h-16 mb-16">
-            {/* Hourglass icon */}
             <View className="w-16 h-16 items-center justify-center">
               <View className="absolute w-12 h-12 bg-blue-900 rotate-45 rounded-sm" />
             </View>

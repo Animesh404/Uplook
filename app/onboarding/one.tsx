@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -8,15 +8,37 @@ import {
   ScrollView
 } from 'react-native';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useOnboarding } from '../contexts/OnboardingContext';
 import ProgressHeader from '../components/ProgressHeader';
 import Button from '../components/Button';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function OnboardingOne() {
-  const [fullName, setFullName] = useState('');
-  const [age, setAge] = useState('');
-  const [email, setEmail] = useState('');
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const { data, updateData } = useOnboarding();
+  const [fullName, setFullName] = useState(data.fullName);
+  const [age, setAge] = useState(data.age);
+  const [email, setEmail] = useState(data.email);
+  const [agreeToTerms, setAgreeToTerms] = useState(data.agreeToTerms);
+
+  const handleContinue = () => {
+    updateData({
+      fullName,
+      age,
+      email,
+      agreeToTerms,
+    });
+    router.push('/onboarding/two');
+  };
+
+  const handleSkip = () => {
+    updateData({
+      fullName,
+      age,
+      email,
+      agreeToTerms,
+    });
+    router.push('/onboarding/two');
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-teal-100">
@@ -86,12 +108,12 @@ export default function OnboardingOne() {
             
             <Button 
               label="Continue" 
-              onPress={() => router.push('/onboarding/two')} 
+              onPress={handleContinue} 
             />
             
             <TouchableOpacity 
               className="mt-3"
-              onPress={() => router.push('/onboarding/two')}
+              onPress={handleSkip}
             >
               <Text className="text-center text-blue-900 py-4">
                 Skip

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
+import { useOnboarding } from '../contexts/OnboardingContext'; // Import useOnboarding
 import ProgressHeader from '../components/ProgressHeader';
 import Button from '../components/Button';
 import SelectableOption from '../components/SelectableOption';
@@ -13,16 +14,29 @@ type ReminderTime = {
 };
 
 export default function OnboardingThree() {
+  const { data, updateData } = useOnboarding(); // Use onboarding context
   const [reminderTimes, setReminderTimes] = useState<ReminderTime[]>([
-    { id: '1', label: 'Morning', icon: 'sunny', selected: true },
-    { id: '2', label: 'Noon', icon: 'partly-sunny', selected: false },
-    { id: '3', label: 'Evening', icon: 'moon', selected: false },
+    { id: '1', label: 'Morning', icon: 'sunny', selected: data.reminderTimes.includes('Morning') },
+    { id: '2', label: 'Noon', icon: 'partly-sunny', selected: data.reminderTimes.includes('Noon') },
+    { id: '3', label: 'Evening', icon: 'moon', selected: data.reminderTimes.includes('Evening') },
   ]);
 
   const toggleReminderTime = (id: string) => {
     setReminderTimes(reminderTimes.map(time => 
       time.id === id ? { ...time, selected: !time.selected } : time
     ));
+  };
+
+  const handleContinue = () => {
+    const selectedTimes = reminderTimes.filter(time => time.selected).map(time => time.label);
+    updateData({ reminderTimes: selectedTimes }); // Save data to context
+    router.push('/calculating');
+  };
+
+  const handleSkip = () => {
+    const selectedTimes = reminderTimes.filter(time => time.selected).map(time => time.label);
+    updateData({ reminderTimes: selectedTimes }); // Save data even on skip
+    router.push('/calculating');
   };
 
   return (
@@ -56,12 +70,12 @@ export default function OnboardingThree() {
             <View className="mt-6">
               <Button 
                 label="Continue" 
-                onPress={() => router.push('/calculating')} 
+                onPress={handleContinue} 
               />
               
               <TouchableOpacity 
                 className="mt-3"
-                onPress={() => router.push('/calculating')}
+                onPress={handleSkip}
               >
                 <Text className="text-center text-blue-900 py-4">
                   Skip
