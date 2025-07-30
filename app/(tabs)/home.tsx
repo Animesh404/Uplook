@@ -9,16 +9,18 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Logo from "../components/Logo";
+import ChatModal from "../components/ChatModal";
 
 const Screen = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f0ffff" }}>
       <View style={{ flex: 1 }}>{children}</View>
     </SafeAreaView>
   );
 };
 
 export default function HomeScreen() {
+  const [isChatModalVisible, setIsChatModalVisible] = React.useState(false);
   return (
     <Screen>
       <ScrollView>
@@ -48,7 +50,7 @@ export default function HomeScreen() {
           {/* Welcome Card */}
           <View
             style={{
-              backgroundColor: "#5eead4",
+              backgroundColor: "#60e2e2",
               borderRadius: 24,
               padding: 24,
               marginBottom: 24,
@@ -68,7 +70,7 @@ export default function HomeScreen() {
             </Text>
             <View
               style={{
-                backgroundColor: "#a7f3d0",
+                backgroundColor: "#ebffff",
                 borderRadius: 16,
                 padding: 16,
                 marginTop: 16,
@@ -87,15 +89,16 @@ export default function HomeScreen() {
                 Have a chat with a specialist
               </Text>
               <TouchableOpacity
+                onPress={() => setIsChatModalVisible(true)}
                 style={{
-                  backgroundColor: "#ffffff",
+                  backgroundColor: "#88d2f2",
                   borderRadius: 999,
                   paddingVertical: 12,
                   paddingHorizontal: 24,
                   alignSelf: "flex-start",
                   marginTop: 12,
                   borderWidth: 1,
-                  borderColor: "#9ca3af",
+                  borderColor: "#002d62",
                 }}
               >
                 <Text style={{ color: "#0f172a", fontWeight: "600" }}>
@@ -104,6 +107,11 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
           </View>
+
+          <ChatModal
+            isVisible={isChatModalVisible}
+            onClose={() => setIsChatModalVisible(false)}
+          />
 
           {/* Today's Agenda */}
           <View style={{ marginBottom: 24 }}>
