@@ -1,7 +1,9 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from app.db.models import ContentTypeEnum, CategoryEnum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, EmailStr
+
+from app.db.models import CategoryEnum, ContentTypeEnum
 
 
 # Base schemas
@@ -182,4 +184,4 @@ class AIAnalysis(BaseModel):
 class Recommendation(BaseModel):
     content: Content
     reason: str
-    priority: int 
+    priority: int

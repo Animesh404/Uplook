@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.endpoints import activity, ai, auth, chat, content, home, users
 from app.core.config import settings
 from app.db.database import engine
 from app.db.models import Base
-from app.api.endpoints import auth, users, home, content, activity, ai, chat
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -12,7 +13,7 @@ app = FastAPI(
     title="Uplook Wellness API",
     description="Backend API for the Uplook wellness application",
     version="1.0.0",
-    debug=settings.debug
+    debug=settings.debug,
 )
 
 # Add CORS middleware
@@ -33,10 +34,12 @@ app.include_router(activity.router, prefix="/activity", tags=["activity"])
 app.include_router(ai.router, prefix="/ai", tags=["ai"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 
+
 @app.get("/")
 async def root():
     return {"message": "Uplook Wellness API is running!", "version": "1.0.0"}
 
+
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "environment": settings.environment} 
+    return {"status": "healthy", "environment": settings.environment}
