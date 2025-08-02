@@ -1,1 +1,1 @@
-# Uplook Wellness API 
+# Uplook Wellness API

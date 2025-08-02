@@ -21,7 +21,7 @@ A comprehensive FastAPI backend for the Uplook wellness application, featuring A
 - **Real-time**: WebSockets
 - **AI/ML**: VADER Sentiment Analysis, NumPy, Pandas, Scikit-learn
 - **Migrations**: Alembic
-- **Cloud Storage**: AWS S3 (configured)
+- **Task Queue**: Celery with Redis (optional)
 
 ## Project Structure
 
@@ -51,78 +51,200 @@ server/
 ├── alembic/                     # Database migrations
 ├── requirements.txt
 ├── main.py                      # Application entry point
+├── docker-compose.yml           # Local development services
+├── setup-local.sh               # Automated setup script
+├── test-local.py                # Local testing script
 └── README.md
 ```
 
-## Setup Instructions
+## Local Development Setup
 
 ### Prerequisites
 
-- Python 3.8+
-- PostgreSQL
-- Redis (for Celery, optional)
+- **Python 3.8+**
+- **PostgreSQL** (local installation or Docker)
+- **Redis** (optional, for Celery background tasks)
 
-### Installation
+### Quick Start with Docker (Recommended)
 
-1. **Clone and navigate to the server directory**:
+The easiest way to get started is using Docker for PostgreSQL and Redis:
 
+#### Option 1: Automated Setup (Recommended)
+
+1. **Install Docker and Docker Compose** (if not already installed)
+
+2. **Run the automated setup script**:
+   ```bash
+   ./setup-local.sh
+   ```
+
+This script will:
+- Check prerequisites (Docker, Python)
+- Start PostgreSQL and Redis with Docker Compose
+- Create a virtual environment
+- Install Python dependencies
+- Create a `.env` file template
+- Run database migrations
+
+#### Option 2: Manual Setup
+
+1. **Install Docker and Docker Compose** (if not already installed)
+
+2. **Start PostgreSQL and Redis with Docker Compose**:
+   ```bash
+   # Start the services
+   docker-compose up -d
+   ```
+
+3. **Clone and navigate to the server directory**:
    ```bash
    cd server
    ```
 
-2. **Create a virtual environment**:
-
+4. **Create a virtual environment**:
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. **Install dependencies**:
-
+5. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Set up environment variables**:
+6. **Set up environment variables**:
    Create a `.env` file in the server directory:
-
    ```env
-   DATABASE_URL=postgresql://username:password@localhost:5432/uplook_db
+   # Database Configuration
+   DATABASE_URL=postgresql://uplook_user:uplook_password@localhost:5432/uplook_db
+   
+   # Clerk Configuration (get these from your Clerk dashboard)
    CLERK_SECRET_KEY=your_clerk_secret_key
    CLERK_WEBHOOK_SECRET=your_clerk_webhook_secret
+   
+   # Redis Configuration (optional)
+   REDIS_URL=redis://localhost:6379/0
+   
+   # Application Configuration
+   SECRET_KEY=your_local_secret_key_here
+   ENVIRONMENT=development
+   DEBUG=true
+   
+   # AWS Configuration (optional for local development)
    AWS_ACCESS_KEY_ID=your_aws_access_key
    AWS_SECRET_ACCESS_KEY=your_aws_secret_key
    AWS_REGION=us-east-1
    S3_BUCKET_NAME=uplook-storage
-   REDIS_URL=redis://localhost:6379/0
-   SECRET_KEY=your_secret_key
-   ENVIRONMENT=development
-   DEBUG=true
    ```
 
-5. **Set up the database**:
-
+7. **Set up the database**:
    ```bash
-   # Create PostgreSQL database
-   createdb uplook_db
-
    # Run migrations
    alembic upgrade head
    ```
 
-6. **Run the application**:
+8. **Run the application**:
    ```bash
    python main.py
    ```
 
 The API will be available at `http://localhost:8000`
 
-## API Documentation
+### Manual Setup (Without Docker)
+
+If you prefer to install PostgreSQL and Redis manually:
+
+#### PostgreSQL Setup
+
+**macOS (using Homebrew)**:
+```bash
+brew install postgresql
+brew services start postgresql
+createdb uplook_db
+```
+
+**Ubuntu/Debian**:
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+sudo -u postgres createdb uplook_db
+sudo -u postgres createuser uplook_user
+sudo -u postgres psql -c "ALTER USER uplook_user WITH PASSWORD 'uplook_password';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE uplook_db TO uplook_user;"
+```
+
+**Windows**:
+1. Download and install PostgreSQL from https://www.postgresql.org/download/windows/
+2. Create database and user through pgAdmin or command line
+
+#### Redis Setup (Optional)
+
+**macOS (using Homebrew)**:
+```bash
+brew install redis
+brew services start redis
+```
+
+**Ubuntu/Debian**:
+```bash
+sudo apt install redis-server
+sudo systemctl start redis-server
+sudo systemctl enable redis-server
+```
+
+**Windows**:
+1. Download Redis for Windows from https://github.com/microsoftarchive/redis/releases
+2. Install and start the Redis service
+
+Then follow steps 3-8 from the Docker setup above.
+
+## Testing the API
+
+### API Documentation
 
 Once the server is running, you can access:
 
 - **Interactive API docs**: `http://localhost:8000/docs`
 - **ReDoc documentation**: `http://localhost:8000/redoc`
+
+### Quick Test Endpoints
+
+Test the API is working:
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Get API documentation
+curl http://localhost:8000/openapi.json
+```
+
+### Automated Testing
+
+Run the automated test script to verify your setup:
+
+```bash
+# Make sure the server is running first
+python main.py
+
+# In another terminal, run the test script
+python test-local.py
+```
+
+This will test:
+- Health endpoint connectivity
+- OpenAPI documentation access
+- Database connection (basic check)
+
+### Testing with Sample Data
+
+You can test the API endpoints using the interactive documentation at `http://localhost:8000/docs` or using tools like:
+
+- **Postman**
+- **Insomnia**
+- **curl** commands
 
 ## API Endpoints
 
@@ -216,45 +338,19 @@ The chat system supports:
 - Connection management
 - User presence tracking
 
-## Deployment
-
-### AWS Deployment
-
-1. **Set up AWS resources**:
-
-   - RDS PostgreSQL instance
-   - S3 bucket for file storage
-   - ElastiCache Redis (optional)
-
-2. **Configure environment variables** for production
-
-3. **Deploy using your preferred method**:
-   - AWS ECS/Fargate
-   - AWS Lambda (with Mangum)
-   - EC2 instances
-   - Docker containers
-
-### Docker Deployment
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-EXPOSE 8000
-
-CMD ["python", "main.py"]
-```
-
-## Development
+## Development Workflow
 
 ### Running Tests
 
 ```bash
+# Install test dependencies
+pip install pytest pytest-asyncio httpx
+
+# Run tests
 pytest
+
+# Run tests with coverage
+pytest --cov=app
 ```
 
 ### Database Migrations
@@ -268,6 +364,23 @@ alembic upgrade head
 
 # Rollback migration
 alembic downgrade -1
+
+# View migration history
+alembic history
+```
+
+### Code Formatting and Linting
+
+```bash
+# Install development tools
+pip install black isort flake8
+
+# Format code
+black app/
+isort app/
+
+# Lint code
+flake8 app/
 ```
 
 ### Adding New Endpoints
@@ -276,6 +389,75 @@ alembic downgrade -1
 2. Add router to `app/api/main.py`
 3. Update schemas in `app/db/schemas.py` if needed
 4. Add any new models to `app/db/models.py`
+5. Create and run migrations if needed
+
+### Debugging
+
+The application runs in debug mode by default. You can:
+
+- Set breakpoints in your IDE
+- Use `print()` statements (they'll appear in the console)
+- Check the logs in the terminal where you started the server
+
+## Troubleshooting
+
+### Common Issues
+
+**Database Connection Error**:
+- Ensure PostgreSQL is running
+- Check your `DATABASE_URL` in `.env`
+- Verify database and user exist
+
+**Port Already in Use**:
+```bash
+# Find process using port 8000
+lsof -i :8000
+# Kill the process
+kill -9 <PID>
+```
+
+**Redis Connection Error** (if using Celery):
+- Ensure Redis is running
+- Check your `REDIS_URL` in `.env`
+- Redis is optional for basic functionality
+
+**Clerk Authentication Issues**:
+- Verify your Clerk credentials in `.env`
+- Check Clerk dashboard for correct keys
+- Ensure webhook endpoints are properly configured
+
+### Reset Database
+
+```bash
+# Drop and recreate database
+dropdb uplook_db
+createdb uplook_db
+alembic upgrade head
+```
+
+### Clean Start
+
+```bash
+# Stop all services
+docker-compose down -v  # if using Docker
+
+# Remove virtual environment
+rm -rf venv
+
+# Start fresh
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Production Deployment
+
+For production deployment, see the [Deployment Guide](./DEPLOYMENT.md) for detailed instructions on:
+
+- AWS deployment
+- Docker deployment
+- Environment configuration
+- Security best practices
 
 ## Contributing
 
