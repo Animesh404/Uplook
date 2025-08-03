@@ -10,6 +10,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import Logo from "../components/Logo";
 import ChatModal from "../components/ChatModal";
+import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@clerk/clerk-expo';
 
 const Screen = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -21,6 +23,77 @@ const Screen = ({ children }: { children: React.ReactNode }) => {
 
 export default function HomeScreen() {
   const [isChatModalVisible, setIsChatModalVisible] = React.useState(false);
+  const { user } = useAuth();
+  const { user: clerkUser } = useUser();
+
+  // Get user's first name
+  const getUserFirstName = () => {
+    const fullName = user?.fullName || clerkUser?.fullName || '';
+    return fullName.split(' ')[0] || 'there';
+  };
+
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  // Get current date
+  const getCurrentDate = () => {
+    const today = new Date();
+    return today.toLocaleDateString('en-US', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+  };
+
+  // Get personalized activities based on user goals
+  const getPersonalizedActivities = () => {
+    const defaultActivities = [
+      "Fill out gratitude journal",
+      "Meditate",
+      "Learning module",
+      "Quiz",
+    ];
+
+    if (user?.goals && user.goals.length > 0) {
+      // Create personalized activities based on user goals
+      const personalizedActivities = user.goals.map(goal => {
+        if (goal.toLowerCase().includes('meditation')) return 'Meditation session';
+        if (goal.toLowerCase().includes('exercise') || goal.toLowerCase().includes('fitness')) return 'Quick workout';
+        if (goal.toLowerCase().includes('sleep')) return 'Sleep hygiene check';
+        if (goal.toLowerCase().includes('stress') || goal.toLowerCase().includes('anxiety')) return 'Stress relief';
+        if (goal.toLowerCase().includes('gratitude')) return 'Gratitude practice';
+        return `${goal} practice`;
+      });
+
+      // Combine personalized and default activities
+      return [...personalizedActivities.slice(0, 2), ...defaultActivities.slice(0, 2)];
+    }
+
+    return defaultActivities;
+  };
+
+  // Get personalized message based on user goals
+  const getPersonalizedMessage = () => {
+    if (user?.goals && user.goals.length > 0) {
+      const primaryGoal = user.goals[0];
+      if (primaryGoal.toLowerCase().includes('meditation')) {
+        return 'Take a moment to center yourself today!';
+      } else if (primaryGoal.toLowerCase().includes('exercise')) {
+        return 'Your body and mind will thank you for moving today!';
+      } else if (primaryGoal.toLowerCase().includes('sleep')) {
+        return 'Prioritize your rest and recovery today!';
+      } else if (primaryGoal.toLowerCase().includes('stress')) {
+        return 'Remember to breathe and stay present today!';
+      }
+    }
+    return "You're one step closer to reaching your goals!";
+  };
+
   return (
     <Screen>
       <ScrollView>
@@ -63,10 +136,10 @@ export default function HomeScreen() {
                 fontSize: 24,
               }}
             >
-              Good evening, Alisha!
+              {getGreeting()}, {getUserFirstName()}!
             </Text>
             <Text style={{ color: "#1e293b", marginTop: 4 }}>
-              You're one step closer to reaching your goals!
+              {getPersonalizedMessage()}
             </Text>
             <View
               style={{
@@ -132,7 +205,7 @@ export default function HomeScreen() {
               >
                 Today's agenda
               </Text>
-              <Text style={{ fontSize: 14, color: "#475569" }}>30-06-2025</Text>
+              <Text style={{ fontSize: 14, color: "#475569" }}>{getCurrentDate()}</Text>
             </View>
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
@@ -268,7 +341,7 @@ export default function HomeScreen() {
                 marginBottom: 16,
               }}
             >
-              Activities
+              {user?.goals && user.goals.length > 0 ? 'Your Personalized Activities' : 'Activities'}
             </Text>
             <View
               style={{
@@ -277,12 +350,7 @@ export default function HomeScreen() {
                 justifyContent: "space-between",
               }}
             >
-              {[
-                "Fill out gratitude journal",
-                "Meditate",
-                "Learning module",
-                "Quiz",
-              ].map((activity, index) => (
+              {getPersonalizedActivities().map((activity, index) => (
                 <View key={index} style={{ width: "48%", marginBottom: 12 }}>
                   <ImageBackground
                     source={{

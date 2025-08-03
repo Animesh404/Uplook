@@ -25,6 +25,22 @@ class CategoryEnum(enum.Enum):
     WORK = "work"
 
 
+class BadgeTypeEnum(enum.Enum):
+    WEEKLY_STREAK = "weekly_streak"
+    MONTHLY_STREAK = "monthly_streak"
+    YEARLY_STREAK = "yearly_streak"
+    MEDITATION_MASTER = "meditation_master"
+    FITNESS_CHAMPION = "fitness_champion"
+    SLEEP_EXPERT = "sleep_expert"
+    STRESS_WARRIOR = "stress_warrior"
+
+
+class UserRoleEnum(enum.Enum):
+    USER = "user"
+    ADMIN = "admin"
+    SUPER_ADMIN = "super_admin"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -34,6 +50,10 @@ class User(Base):
     age = Column(Integer, nullable=True)
     email = Column(String, unique=True, nullable=False)
     onboarded = Column(Boolean, default=False)
+    role = Column(Enum(UserRoleEnum), default=UserRoleEnum.USER)
+    current_streak = Column(Integer, default=0)
+    longest_streak = Column(Integer, default=0)
+    last_activity_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=func.now())
 
     # Relationships
@@ -42,6 +62,7 @@ class User(Base):
     activity_logs = relationship("ActivityLog", back_populates="user")
     journal_entries = relationship("JournalEntry", back_populates="user")
     mood_logs = relationship("MoodLog", back_populates="user")
+    user_badges = relationship("UserBadge", back_populates="user")
 
 
 class Goal(Base):
@@ -141,3 +162,33 @@ class ChatMessage(Base):
     sender_clerk_id = Column(String, nullable=False)
     message = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=func.now())
+
+
+class Badge(Base):
+    __tablename__ = "badges"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    badge_type = Column(Enum(BadgeTypeEnum), nullable=False)
+    icon_url = Column(String, nullable=True)
+    requirement_value = Column(Integer, nullable=True)  # e.g., 7 for weekly streak
+    created_at = Column(DateTime, default=func.now())
+
+    # Relationships
+    user_badges = relationship("UserBadge", back_populates="badge")
+
+
+class UserBadge(Base):
+    __tablename__ = "user_badges"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    badge_id = Column(Integer, ForeignKey("badges.id"), nullable=False)
+    earned_at = Column(DateTime, default=func.now())
+    progress = Column(Integer, default=0)  # Current progress towards badge
+    is_completed = Column(Boolean, default=False)
+
+    # Relationships
+    user = relationship("User", back_populates="user_badges")
+    badge = relationship("Badge", back_populates="user_badges")

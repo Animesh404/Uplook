@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.database import get_db
-from app.db.models import User
+from app.db.models import User, UserRoleEnum
 
 security = HTTPBearer()
 
@@ -69,6 +69,30 @@ async def get_current_active_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """Get current active user (can be extended to check if user is active/banned)"""
+    return current_user
+
+
+async def require_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Require admin role"""
+    if current_user.role not in [UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return current_user
+
+
+async def require_super_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Require super admin role"""
+    if current_user.role != UserRoleEnum.SUPER_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super admin access required"
+        )
     return current_user
 
 

@@ -43,13 +43,82 @@ async def update_user_profile(
     return current_user
 
 
+@router.post("/complete-onboarding", response_model=UserSchema)
+async def complete_onboarding_simple(
+    onboarding_data: OnboardingData,
+    db: Session = Depends(get_db),
+):
+    """Complete user onboarding process (simplified for testing)"""
+    
+    # For now, create a user without Clerk authentication
+    # TODO: Add proper Clerk authentication when webhook is working
+    
+    # Check if user exists by email
+    existing_user = db.query(User).filter(User.email == onboarding_data.email).first()
+    
+    if existing_user:
+        # Update existing user
+        existing_user.full_name = onboarding_data.fullName
+        existing_user.age = onboarding_data.age
+        existing_user.onboarded = True
+        current_user = existing_user
+    else:
+        # Create new user
+        current_user = User(
+            email=onboarding_data.email,
+            full_name=onboarding_data.fullName,
+            age=onboarding_data.age,
+            onboarded=True,
+            clerk_user_id=f"temp_{onboarding_data.email}"  # Temporary ID
+        )
+        db.add(current_user)
+        db.commit()
+        db.refresh(current_user)
+
+    # Handle user goals (same as original)
+    # First, remove existing goals
+    db.query(UserGoal).filter(UserGoal.user_id == current_user.id).delete()
+
+    # Add new goals
+    for goal_name in onboarding_data.goals:
+        # Find or create goal
+        goal = db.query(Goal).filter(Goal.name == goal_name).first()
+        if not goal:
+            goal = Goal(name=goal_name)
+            db.add(goal)
+            db.commit()
+            db.refresh(goal)
+
+        # Create user-goal relationship
+        user_goal = UserGoal(user_id=current_user.id, goal_id=goal.id)
+        db.add(user_goal)
+
+    # Handle user settings
+    user_settings = (
+        db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
+    )
+
+    if user_settings:
+        user_settings.reminder_times = onboarding_data.reminderTimes
+    else:
+        user_settings = UserSettings(
+            user_id=current_user.id, reminder_times=onboarding_data.reminderTimes
+        )
+        db.add(user_settings)
+
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user
+
+
 @router.put("/me/onboard", response_model=UserSchema)
 async def onboard_user(
     onboarding_data: OnboardingData,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    """Complete user onboarding process"""
+    """Complete user onboarding process (with Clerk authentication)"""
 
     # Update user basic info
     current_user.full_name = onboarding_data.full_name
@@ -81,10 +150,10 @@ async def onboard_user(
     )
 
     if user_settings:
-        user_settings.reminder_times = onboarding_data.reminder_times
+        user_settings.reminder_times = onboarding_data.reminderTimes
     else:
         user_settings = UserSettings(
-            user_id=current_user.id, reminder_times=onboarding_data.reminder_times
+            user_id=current_user.id, reminder_times=onboarding_data.reminderTimes
         )
         db.add(user_settings)
 
