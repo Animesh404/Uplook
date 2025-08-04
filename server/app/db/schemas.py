@@ -1,7 +1,9 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from app.db.models import ContentTypeEnum, CategoryEnum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, EmailStr
+
+from app.db.models import CategoryEnum, ContentTypeEnum, BadgeTypeEnum, UserRoleEnum
 
 
 # Base schemas
@@ -24,6 +26,10 @@ class User(UserBase):
     id: int
     clerk_user_id: str
     onboarded: bool
+    role: UserRoleEnum
+    current_streak: int
+    longest_streak: int
+    last_activity_date: Optional[datetime]
     created_at: datetime
 
     class Config:
@@ -32,11 +38,11 @@ class User(UserBase):
 
 # Onboarding schemas
 class OnboardingData(BaseModel):
-    full_name: str
+    fullName: str
     age: int
     email: EmailStr
     goals: List[str]
-    reminder_times: Dict[str, bool]
+    reminderTimes: List[str]
 
 
 # Goal schemas
@@ -182,4 +188,59 @@ class AIAnalysis(BaseModel):
 class Recommendation(BaseModel):
     content: Content
     reason: str
-    priority: int 
+    priority: int
+
+
+# Badge schemas
+class BadgeBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    badge_type: BadgeTypeEnum
+    icon_url: Optional[str] = None
+    requirement_value: Optional[int] = None
+
+
+class BadgeCreate(BadgeBase):
+    pass
+
+
+class Badge(BadgeBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# User Badge schemas
+class UserBadgeBase(BaseModel):
+    progress: int = 0
+    is_completed: bool = False
+
+
+class UserBadgeCreate(UserBadgeBase):
+    user_id: int
+    badge_id: int
+
+
+class UserBadge(UserBadgeBase):
+    id: int
+    user_id: int
+    badge_id: int
+    earned_at: datetime
+    badge: Badge
+
+    class Config:
+        from_attributes = True
+
+
+# Streak schemas
+class StreakInfo(BaseModel):
+    current_streak: int
+    longest_streak: int
+    last_activity_date: Optional[datetime]
+    streak_percentage: float  # Progress towards next milestone
+
+
+class UserWithBadges(User):
+    user_badges: List[UserBadge] = []

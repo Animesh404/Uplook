@@ -17,7 +17,7 @@ export default function WelcomeScreen() {
         <View className="w-full mt-12">
           <Button 
             label="Get started" 
-            onPress={() => router.push('/onboarding/one')} 
+            onPress={() => router.push('/sign-up')} 
           />
           
           <TouchableOpacity 

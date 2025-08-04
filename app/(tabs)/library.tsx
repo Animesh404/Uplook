@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Logo from '../components/Logo';
+import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@clerk/clerk-expo';
 
 type ChecklistItem = {
   id: string;
@@ -10,12 +12,33 @@ type ChecklistItem = {
 };
 
 export default function LibraryScreen() {
-  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
-    { id: '1', label: 'Think good thoughts of yourself', completed: true },
-    { id: '2', label: 'Stretch your body', completed: true },
-    { id: '3', label: 'Have a meditation', completed: false },
-    { id: '4', label: 'Daily journaling', completed: false },
-  ]);
+  const { user } = useAuth();
+  const { user: clerkUser } = useUser();
+  
+  // Get personalized checklist items based on user goals
+  const getPersonalizedChecklist = (): ChecklistItem[] => {
+    const defaultItems = [
+      { id: '1', label: 'Think good thoughts of yourself', completed: true },
+      { id: '2', label: 'Stretch your body', completed: true },
+      { id: '3', label: 'Have a meditation', completed: false },
+      { id: '4', label: 'Daily journaling', completed: false },
+    ];
+
+    if (user?.goals && user.goals.length > 0) {
+      const personalizedItems = user.goals.map((goal, index) => ({
+        id: `goal-${index + 1}`,
+        label: `Work on: ${goal}`,
+        completed: false,
+      }));
+
+      // Combine personalized goals with default items
+      return [...personalizedItems.slice(0, 2), ...defaultItems.slice(0, 2)];
+    }
+
+    return defaultItems;
+  };
+
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(getPersonalizedChecklist());
 
   const toggleChecklistItem = (id: string) => {
     setChecklistItems(items =>
@@ -23,6 +46,67 @@ export default function LibraryScreen() {
         item.id === id ? { ...item, completed: !item.completed } : item
       )
     );
+  };
+
+  // Get personalized learning module title
+  const getLearningModuleTitle = () => {
+    if (user?.goals && user.goals.length > 0) {
+      const primaryGoal = user.goals[0];
+      if (primaryGoal.toLowerCase().includes('meditation')) {
+        return 'Mindfulness & Meditation';
+      } else if (primaryGoal.toLowerCase().includes('exercise') || primaryGoal.toLowerCase().includes('fitness')) {
+        return 'Movement & Wellness';
+      } else if (primaryGoal.toLowerCase().includes('sleep')) {
+        return 'Sleep & Recovery';
+      } else if (primaryGoal.toLowerCase().includes('stress') || primaryGoal.toLowerCase().includes('anxiety')) {
+        return 'Stress Management';
+      }
+    }
+    return 'How to be mindful';
+  };
+
+  // Get personalized suggested activities
+  const getSuggestedActivities = () => {
+    if (user?.goals && user.goals.length > 0) {
+      const primaryGoal = user.goals[0];
+      if (primaryGoal.toLowerCase().includes('meditation')) {
+        return [
+          { title: 'Meditation video', icon: 'play-circle' },
+          { title: 'Breathing exercise', icon: 'leaf' },
+        ];
+      } else if (primaryGoal.toLowerCase().includes('exercise')) {
+        return [
+          { title: 'Quick workout', icon: 'fitness' },
+          { title: 'Stretching routine', icon: 'body' },
+        ];
+      } else if (primaryGoal.toLowerCase().includes('sleep')) {
+        return [
+          { title: 'Sleep meditation', icon: 'moon' },
+          { title: 'Relaxation music', icon: 'musical-notes' },
+        ];
+      }
+    }
+    return [
+      { title: 'Meditation video', icon: 'play-circle' },
+      { title: 'Take a break from social media', icon: 'phone-portrait' },
+    ];
+  };
+
+  // Get personalized video coach content
+  const getVideoCoachContent = () => {
+    if (user?.goals && user.goals.length > 0) {
+      const primaryGoal = user.goals[0];
+      if (primaryGoal.toLowerCase().includes('anxiety') || primaryGoal.toLowerCase().includes('stress')) {
+        return 'How to cope with anxiety';
+      } else if (primaryGoal.toLowerCase().includes('meditation')) {
+        return 'Beginner meditation guide';
+      } else if (primaryGoal.toLowerCase().includes('sleep')) {
+        return 'Sleep hygiene tips';
+      } else if (primaryGoal.toLowerCase().includes('exercise')) {
+        return 'Building healthy habits';
+      }
+    }
+    return 'How to cope with anxiety';
   };
 
   return (
@@ -38,7 +122,7 @@ export default function LibraryScreen() {
           {/* Learning module header */}
           <View className="mb-6">
             <Text className="text-xl font-bold text-blue-900 mb-1">
-              How to be mindful
+              {getLearningModuleTitle()}
             </Text>
             <Text className="text-sm text-blue-700">
               Learning module
@@ -77,7 +161,9 @@ export default function LibraryScreen() {
           {/* Suggested activities section */}
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-semibold text-blue-900">Suggested activities</Text>
+              <Text className="text-lg font-semibold text-blue-900">
+                {user?.goals && user.goals.length > 0 ? 'Personalized Activities' : 'Suggested activities'}
+              </Text>
               <View className="flex-row">
                 <TouchableOpacity className="p-1">
                   <Ionicons name="chevron-back" size={20} color="#6b7280" />
@@ -89,31 +175,25 @@ export default function LibraryScreen() {
             </View>
             
             <View className="flex-row justify-between mb-4">
-              <TouchableOpacity className="w-[48%]">
-                <View className="bg-teal-100 rounded-xl h-32 items-center justify-center relative">
-                  <Ionicons name="play-circle" size={32} color="white" />
-                  <View className="absolute bottom-3 left-3 right-3">
-                    <Text className="text-white text-xs font-medium">
-                      Meditation video
-                    </Text>
+              {getSuggestedActivities().map((activity, index) => (
+                <TouchableOpacity key={index} className="w-[48%]">
+                  <View className="bg-teal-100 rounded-xl h-32 items-center justify-center relative">
+                    <Ionicons name={activity.icon as any} size={32} color="white" />
+                    <View className="absolute bottom-3 left-3 right-3">
+                      <Text className="text-white text-xs font-medium">
+                        {activity.title}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity className="w-[48%]">
-                <View className="bg-blue-400 rounded-xl h-32 items-center justify-center p-4">
-                  <Text className="text-white text-sm font-semibold text-center">
-                    Take a break from social media
-                  </Text>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
           
           {/* Quick mindfulness check */}
           <View className="mb-6">
             <Text className="text-lg font-semibold text-blue-900 mb-4">
-              Quick mindfulness check
+              {user?.goals && user.goals.length > 0 ? 'Your Daily Progress' : 'Quick mindfulness check'}
             </Text>
             
             <View className="bg-teal-100 rounded-xl p-4">
@@ -152,7 +232,7 @@ export default function LibraryScreen() {
               <View className="flex-1">
                 <Text className="text-xs text-teal-800 mb-1">Video coach</Text>
                 <Text className="text-lg font-semibold text-white">
-                  How to cope with anxiety
+                  {getVideoCoachContent()}
                 </Text>
               </View>
               <View className="w-12 h-12 bg-white bg-opacity-20 rounded-full items-center justify-center">

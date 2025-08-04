@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Logo from '../components/Logo';
+import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@clerk/clerk-expo';
 
 type FilterTag = {
   id: string;
@@ -19,35 +21,178 @@ type ActivityCard = {
 };
 
 export default function ExploreScreen() {
-  const [filterTags, setFilterTags] = useState<FilterTag[]>([
-    { id: '1', label: 'All', active: true },
-    { id: '2', label: 'Meditation', active: false },
-    { id: '3', label: 'Movement', active: false },
-    { id: '4', label: 'Sleep', active: true },
-    { id: '5', label: 'Self-confidence', active: false },
-    { id: '6', label: 'Work', active: false },
-    { id: '7', label: 'Calm', active: false },
-    { id: '8', label: 'Gratitude', active: false },
-    { id: '9', label: 'Health', active: false },
-  ]);
+  const { user } = useAuth();
+  const { user: clerkUser } = useUser();
 
-  const musicCards: ActivityCard[] = [
-    { id: '1', title: 'Night Time', icon: 'moon' },
-    { id: '2', title: 'Sleepy Cat', icon: 'paw' },
-    { id: '3', title: 'Sweet Dreams', icon: 'bed' },
-    { id: '4', title: 'Nap Time', icon: 'cafe' },
-  ];
+  // Get personalized filter tags based on user goals
+  const getPersonalizedFilterTags = (): FilterTag[] => {
+    const defaultTags = [
+      { id: '1', label: 'All', active: true },
+      { id: '2', label: 'Meditation', active: false },
+      { id: '3', label: 'Movement', active: false },
+      { id: '4', label: 'Sleep', active: false },
+      { id: '5', label: 'Self-confidence', active: false },
+      { id: '6', label: 'Work', active: false },
+      { id: '7', label: 'Calm', active: false },
+      { id: '8', label: 'Gratitude', active: false },
+      { id: '9', label: 'Health', active: false },
+    ];
 
-  const meditationCards: ActivityCard[] = [
-    { id: '1', title: 'Flow & Focus', image: '/placeholder.svg?height=120&width=160' },
-    { id: '2', title: 'Night Routine', image: '/placeholder.svg?height=120&width=160' },
-  ];
+    if (user?.goals && user.goals.length > 0) {
+      // Add user's goals as active filter tags
+      const userGoalTags = user.goals.map((goal, index) => ({
+        id: `goal-${index + 1}`,
+        label: goal,
+        active: true,
+      }));
 
-  const quizCards: ActivityCard[] = [
-    { id: '1', title: 'Mind Matters', icon: 'moon' },
-    { id: '2', title: 'Path to Progress', icon: 'paw' },
-    { id: '3', title: 'Wellness Wisdom', icon: 'leaf' },
-  ];
+      // Combine user goals with default tags
+      return [...userGoalTags, ...defaultTags];
+    }
+
+    return defaultTags;
+  };
+
+  const [filterTags, setFilterTags] = useState<FilterTag[]>(getPersonalizedFilterTags());
+
+  // Get personalized music cards based on user goals
+  const getPersonalizedMusicCards = (): ActivityCard[] => {
+    const defaultMusicCards = [
+      { id: '1', title: 'Night Time', icon: 'moon' },
+      { id: '2', title: 'Sleepy Cat', icon: 'paw' },
+      { id: '3', title: 'Sweet Dreams', icon: 'bed' },
+      { id: '4', title: 'Nap Time', icon: 'cafe' },
+    ];
+
+    if (user?.goals && user.goals.length > 0) {
+      const primaryGoal = user.goals[0];
+      if (primaryGoal.toLowerCase().includes('sleep')) {
+        return [
+          { id: '1', title: 'Deep Sleep', icon: 'moon' },
+          { id: '2', title: 'Relaxation', icon: 'leaf' },
+          { id: '3', title: 'Calm Mind', icon: 'heart' },
+          { id: '4', title: 'Peaceful Night', icon: 'bed' },
+        ];
+      } else if (primaryGoal.toLowerCase().includes('meditation')) {
+        return [
+          { id: '1', title: 'Mindful Sounds', icon: 'leaf' },
+          { id: '2', title: 'Zen Music', icon: 'flower' },
+          { id: '3', title: 'Breathing', icon: 'heart' },
+          { id: '4', title: 'Meditation', icon: 'moon' },
+        ];
+      } else if (primaryGoal.toLowerCase().includes('exercise')) {
+        return [
+          { id: '1', title: 'Workout Mix', icon: 'fitness' },
+          { id: '2', title: 'Energy Boost', icon: 'flash' },
+          { id: '3', title: 'Motivation', icon: 'star' },
+          { id: '4', title: 'Active Life', icon: 'body' },
+        ];
+      }
+    }
+
+    return defaultMusicCards;
+  };
+
+  // Get personalized meditation cards
+  const getPersonalizedMeditationCards = (): ActivityCard[] => {
+    const defaultMeditationCards = [
+      { id: '1', title: 'Flow & Focus', image: '/placeholder.svg?height=120&width=160' },
+      { id: '2', title: 'Night Routine', image: '/placeholder.svg?height=120&width=160' },
+    ];
+
+    if (user?.goals && user.goals.length > 0) {
+      const primaryGoal = user.goals[0];
+      if (primaryGoal.toLowerCase().includes('meditation')) {
+        return [
+          { id: '1', title: 'Beginner Meditation', image: '/placeholder.svg?height=120&width=160' },
+          { id: '2', title: 'Mindfulness Practice', image: '/placeholder.svg?height=120&width=160' },
+        ];
+      } else if (primaryGoal.toLowerCase().includes('sleep')) {
+        return [
+          { id: '1', title: 'Sleep Meditation', image: '/placeholder.svg?height=120&width=160' },
+          { id: '2', title: 'Relaxation Session', image: '/placeholder.svg?height=120&width=160' },
+        ];
+      } else if (primaryGoal.toLowerCase().includes('stress') || primaryGoal.toLowerCase().includes('anxiety')) {
+        return [
+          { id: '1', title: 'Stress Relief', image: '/placeholder.svg?height=120&width=160' },
+          { id: '2', title: 'Anxiety Management', image: '/placeholder.svg?height=120&width=160' },
+        ];
+      }
+    }
+
+    return defaultMeditationCards;
+  };
+
+  // Get personalized quiz cards
+  const getPersonalizedQuizCards = (): ActivityCard[] => {
+    const defaultQuizCards = [
+      { id: '1', title: 'Mind Matters', icon: 'moon' },
+      { id: '2', title: 'Path to Progress', icon: 'paw' },
+      { id: '3', title: 'Wellness Wisdom', icon: 'leaf' },
+    ];
+
+    if (user?.goals && user.goals.length > 0) {
+      const primaryGoal = user.goals[0];
+      if (primaryGoal.toLowerCase().includes('meditation')) {
+        return [
+          { id: '1', title: 'Meditation Level', icon: 'leaf' },
+          { id: '2', title: 'Mindfulness Check', icon: 'heart' },
+          { id: '3', title: 'Zen Assessment', icon: 'moon' },
+        ];
+      } else if (primaryGoal.toLowerCase().includes('sleep')) {
+        return [
+          { id: '1', title: 'Sleep Quality', icon: 'bed' },
+          { id: '2', title: 'Rest Assessment', icon: 'moon' },
+          { id: '3', title: 'Sleep Habits', icon: 'time' },
+        ];
+      } else if (primaryGoal.toLowerCase().includes('exercise')) {
+        return [
+          { id: '1', title: 'Fitness Level', icon: 'fitness' },
+          { id: '2', title: 'Health Check', icon: 'heart' },
+          { id: '3', title: 'Activity Assessment', icon: 'body' },
+        ];
+      }
+    }
+
+    return defaultQuizCards;
+  };
+
+  // Get personalized video content
+  const getPersonalizedVideoContent = () => {
+    if (user?.goals && user.goals.length > 0) {
+      const primaryGoal = user.goals[0];
+      if (primaryGoal.toLowerCase().includes('anxiety') || primaryGoal.toLowerCase().includes('stress')) {
+        return {
+          title: 'Managing Stress & Anxiety',
+          author: 'Wellness Coach',
+        };
+      } else if (primaryGoal.toLowerCase().includes('meditation')) {
+        return {
+          title: 'Meditation for Beginners',
+          author: 'Mindfulness Expert',
+        };
+      } else if (primaryGoal.toLowerCase().includes('sleep')) {
+        return {
+          title: 'Better Sleep Habits',
+          author: 'Sleep Specialist',
+        };
+      } else if (primaryGoal.toLowerCase().includes('exercise')) {
+        return {
+          title: 'Building Healthy Habits',
+          author: 'Fitness Coach',
+        };
+      }
+    }
+    return {
+      title: 'Nurturing Restful Night',
+      author: 'Mindful Slumber',
+    };
+  };
+
+  const musicCards = getPersonalizedMusicCards();
+  const meditationCards = getPersonalizedMeditationCards();
+  const quizCards = getPersonalizedQuizCards();
+  const videoContent = getPersonalizedVideoContent();
 
   const toggleFilter = (id: string) => {
     setFilterTags(tags => 
@@ -69,7 +214,7 @@ export default function ExploreScreen() {
           
           {/* Add daily activity section */}
           <Text className="text-xl font-bold text-blue-900 mb-4">
-            Add daily activity
+            {user?.goals && user.goals.length > 0 ? 'Personalized Activities' : 'Add daily activity'}
           </Text>
           
           {/* Filter tags */}
@@ -98,7 +243,9 @@ export default function ExploreScreen() {
           {/* Music section */}
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-semibold text-blue-900">Music</Text>
+              <Text className="text-lg font-semibold text-blue-900">
+                {user?.goals && user.goals.length > 0 ? 'Personalized Music' : 'Music'}
+              </Text>
               <View className="flex-row">
                 <TouchableOpacity className="p-1">
                   <Ionicons name="chevron-back" size={20} color="#6b7280" />
@@ -128,7 +275,9 @@ export default function ExploreScreen() {
           {/* Meditations section */}
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-semibold text-blue-900">Meditations</Text>
+              <Text className="text-lg font-semibold text-blue-900">
+                {user?.goals && user.goals.length > 0 ? 'Personalized Meditations' : 'Meditations'}
+              </Text>
               <View className="flex-row">
                 <TouchableOpacity className="p-1">
                   <Ionicons name="chevron-back" size={20} color="#6b7280" />
@@ -155,7 +304,9 @@ export default function ExploreScreen() {
           {/* Videos section */}
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-semibold text-blue-900">Videos</Text>
+              <Text className="text-lg font-semibold text-blue-900">
+                {user?.goals && user.goals.length > 0 ? 'Recommended Videos' : 'Videos'}
+              </Text>
               <View className="flex-row">
                 <TouchableOpacity className="p-1">
                   <Ionicons name="chevron-back" size={20} color="#6b7280" />
@@ -172,10 +323,10 @@ export default function ExploreScreen() {
               </View>
               <View className="p-4">
                 <Text className="text-lg font-semibold text-blue-900 mb-1">
-                  Nurturing Restful Night
+                  {videoContent.title}
                 </Text>
                 <Text className="text-sm text-blue-700">
-                  by Mindful Slumber
+                  by {videoContent.author}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -184,7 +335,9 @@ export default function ExploreScreen() {
           {/* Quizzes section */}
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-semibold text-blue-900">Quizzes</Text>
+              <Text className="text-lg font-semibold text-blue-900">
+                {user?.goals && user.goals.length > 0 ? 'Personalized Quizzes' : 'Quizzes'}
+              </Text>
               <View className="flex-row">
                 <TouchableOpacity className="p-1">
                   <Ionicons name="chevron-back" size={20} color="#6b7280" />
