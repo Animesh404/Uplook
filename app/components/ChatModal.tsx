@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, TextInput, ScrollView, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, SafeAreaView, TouchableOpacity, TextInput, ScrollView, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Logo from './Logo'; // Assuming Logo component is in components/Logo.tsx
+import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '@clerk/clerk-expo';
+import Logo from './Logo';
 
 type Message = {
   id: string;
@@ -9,6 +11,7 @@ type Message = {
   sender: 'user' | 'bot';
   avatar?: string;
   senderName?: string;
+  timestamp: Date;
 };
 
 type ChatModalProps = {
@@ -17,54 +20,191 @@ type ChatModalProps = {
 };
 
 export default function ChatModal({ isVisible, onClose }: ChatModalProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Hey! How was your day?',
-      sender: 'bot',
-      senderName: 'Sarah',
-      avatar: '/placeholder.svg?height=40&width=40',
-    },
-    {
-      id: '2',
-      text: 'Hi Alisha, can you tell me more about how your day was?',
-      sender: 'bot',
-      senderName: 'Sarah',
-      avatar: '/placeholder.svg?height=40&width=40',
-    },
-    {
-      id: '3',
-      text: 'I wasn\'t anxious for a first time in a long time',
-      sender: 'user',
-      avatar: '/placeholder.svg?height=40&width=40',
-    },
-    {
-      id: '4',
-      text: 'That\'s an improvement!',
-      sender: 'bot',
-      senderName: 'Sarah',
-      avatar: '/placeholder.svg?height=40&width=40',
-    },
-  ]);
+  const { user } = useAuth();
+  const { user: clerkUser } = useUser();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const ws = useRef<WebSocket | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (isVisible) {
+      connectToChat();
+      loadInitialMessages();
+    } else {
+      disconnectFromChat();
+    }
+
+    return () => {
+      disconnectFromChat();
+    };
+  }, [isVisible]);
+
+  const loadInitialMessages = () => {
+    const initialMessages: Message[] = [
+      {
+        id: '1',
+        text: `Hello ${user?.fullName?.split(' ')[0] || 'there'}! I'm your wellness coach. How are you feeling today?`,
+        sender: 'bot',
+        senderName: 'Sarah',
+        timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+      },
+    ];
+    setMessages(initialMessages);
+  };
+
+  const connectToChat = async () => {
+    if (isConnecting || isConnected) return;
+    
+    // For now, skip WebSocket connection and use mock chat
+    // TODO: Implement WebSocket when backend is ready
+    console.log('Using mock chat (WebSocket not implemented yet)');
+    setIsConnected(true);
+    setIsConnecting(false);
+    
+    // Uncomment below when WebSocket is implemented
+    /*
+    try {
+      setIsConnecting(true);
+      const chatRoom = 'wellness-chat';
+      const userClerkId = clerkUser?.id || 'anonymous';
+      
+      const wsUrl = `ws://localhost:8000/chat/ws/${chatRoom}?user_clerk_id=${userClerkId}`;
+      ws.current = new WebSocket(wsUrl);
+
+      ws.current.onopen = () => {
+        console.log('Connected to chat');
+        setIsConnected(true);
+        setIsConnecting(false);
+      };
+
+      ws.current.onmessage = (event) => {
+        try {
+          const messageData = JSON.parse(event.data);
+          const newMessage: Message = {
+            id: messageData.id || Date.now().toString(),
+            text: messageData.message,
+            sender: messageData.sender_clerk_id === clerkUser?.id ? 'user' : 'bot',
+            senderName: messageData.sender_clerk_id === clerkUser?.id ? undefined : 'Sarah',
+            timestamp: new Date(messageData.timestamp),
+          };
+          
+          setMessages(prev => [...prev, newMessage]);
+          
+          setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        } catch (error) {
+          console.error('Error parsing message:', error);
+        }
+      };
+
+      ws.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setIsConnected(false);
+        setIsConnecting(false);
+      };
+
+      ws.current.onclose = () => {
+        console.log('Disconnected from chat');
+        setIsConnected(false);
+        setIsConnecting(false);
+      };
+
+    } catch (error) {
+      console.error('Error connecting to chat:', error);
+      setIsConnecting(false);
+      setIsConnected(true);
+    }
+    */
+  };
+
+  const disconnectFromChat = () => {
+    if (ws.current) {
+      ws.current.close();
+      ws.current = null;
+    }
+    setIsConnected(false);
+    setIsConnecting(false);
+  };
 
   if (!isVisible) {
     return null;
   }
 
   const handleSendMessage = () => {
-    if (inputText.trim()) {
-      const newMessage: Message = {
-        id: String(Date.now()),
-        text: inputText.trim(),
-        sender: 'user',
-        avatar: '/placeholder.svg?height=40&width=40', // User's avatar
-      };
-      setMessages([...messages, newMessage]);
-      setInputText('');
-      // In a real app, you'd send this message to your chatbot API here
-      // and then add the bot's response to the messages state.
+    if (!inputText.trim()) return;
+
+    const messageText = inputText.trim();
+    setInputText('');
+
+    // Add user message immediately to UI
+    const userMessage: Message = {
+      id: String(Date.now()),
+      text: messageText,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    // For now, always use mock responses
+    // TODO: Use WebSocket when backend is ready
+    addMockBotResponse(messageText);
+    
+    // Uncomment below when WebSocket is implemented
+    /*
+    if (isConnected && ws.current) {
+      try {
+        ws.current.send(JSON.stringify({
+          message: messageText,
+        }));
+      } catch (error) {
+        console.error('Error sending message:', error);
+        addMockBotResponse(messageText);
+      }
+    } else {
+      addMockBotResponse(messageText);
     }
+    */
+
+    // Auto-scroll to bottom
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  const addMockBotResponse = (userMessage: string) => {
+    // Simple mock responses based on user input
+    let botResponse = "I understand. Can you tell me more about how you're feeling?";
+    
+    const lowerMessage = userMessage.toLowerCase();
+    if (lowerMessage.includes('good') || lowerMessage.includes('great') || lowerMessage.includes('happy')) {
+      botResponse = "That's wonderful to hear! What made your day so positive?";
+    } else if (lowerMessage.includes('bad') || lowerMessage.includes('sad') || lowerMessage.includes('anxious')) {
+      botResponse = "I'm sorry you're feeling that way. Would you like to try a breathing exercise or talk about what's bothering you?";
+    } else if (lowerMessage.includes('stressed') || lowerMessage.includes('overwhelmed')) {
+      botResponse = "Stress can be challenging. Have you tried any of the mindfulness techniques we've discussed?";
+    } else if (lowerMessage.includes('meditation') || lowerMessage.includes('mindful')) {
+      botResponse = "Meditation is a great practice! How has your mindfulness journey been going?";
+    }
+
+    // Add bot response after a short delay
+    setTimeout(() => {
+      const botMessage: Message = {
+        id: String(Date.now() + 1),
+        text: botResponse,
+        sender: 'bot',
+        senderName: 'Sarah',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, botMessage]);
+      
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
   };
 
   const MessageBubble = ({ message }: { message: Message }) => {
@@ -110,8 +250,25 @@ export default function ChatModal({ isVisible, onClose }: ChatModalProps) {
             </TouchableOpacity>
           </View>
 
+          {/* Connection Status */}
+          {isConnecting && (
+            <View className="bg-yellow-50 p-3 rounded-lg mb-4">
+              <Text className="text-yellow-800 text-center">Connecting to chat...</Text>
+            </View>
+          )}
+          
+          {!isConnected && !isConnecting && (
+            <View className="bg-red-50 p-3 rounded-lg mb-4">
+              <Text className="text-red-800 text-center">Chat offline - using mock responses</Text>
+            </View>
+          )}
+
           {/* Chat Messages */}
-          <ScrollView className="flex-1 mb-4" contentContainerStyle={{ paddingBottom: 20 }}>
+          <ScrollView 
+            ref={scrollViewRef}
+            className="flex-1 mb-4" 
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} />
             ))}

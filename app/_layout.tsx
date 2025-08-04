@@ -30,6 +30,8 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding/three" />
           <Stack.Screen name="calculating" />
           <Stack.Screen name="results" />
+          <Stack.Screen name="journal" />
+          <Stack.Screen name="content/[id]" />
           <Stack.Screen 
             name="(tabs)" 
             options={{ 

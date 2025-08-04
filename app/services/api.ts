@@ -2,7 +2,7 @@
 const API_BASE_URL = 'http://localhost:8000'; // Change this to your actual backend URL
 
 // Feature flags for development
-const USE_MOCK_DATA = false; // Set to true to use mock data only
+const USE_MOCK_DATA = true; // Set to true to use mock data only
 
 export interface OnboardingData {
   fullName: string;
@@ -46,6 +46,20 @@ export interface Badge {
   icon_url?: string;
   earned_at: string;
   is_completed: boolean;
+}
+
+export interface JournalEntry {
+  id: string;
+  entry_text: string;
+  sentiment_score?: number;
+  created_at: string;
+}
+
+export interface MoodLog {
+  id: string;
+  mood_rating: number;
+  note?: string;
+  timestamp: string;
 }
 
 class ApiService {
@@ -179,6 +193,100 @@ class ApiService {
     return this.makeRequest(`/content/personalized${query}`);
   }
 
+  // Journal endpoints
+  async getJournalEntries(): Promise<JournalEntry[]> {
+    // Use mock data during development
+    if (USE_MOCK_DATA) {
+      console.log('Using mock journal data (development mode)');
+      return this.getMockJournalEntries();
+    }
+
+    try {
+      return await this.makeRequest('/journal/entries');
+    } catch (error) {
+      console.warn('Authenticated journal endpoint failed, trying mock endpoint:', error);
+      try {
+        return await this.makeRequest('/journal/mock-entries');
+      } catch (mockError) {
+        console.warn('Mock endpoint also failed, using fallback data:', mockError);
+        return this.getMockJournalEntries();
+      }
+    }
+  }
+
+  async createJournalEntry(data: { entry_text: string }): Promise<JournalEntry> {
+    // Use mock data during development
+    if (USE_MOCK_DATA) {
+      console.log('Using mock journal creation (development mode)');
+      return this.getMockJournalEntry(data.entry_text);
+    }
+
+    try {
+      return await this.makeRequest('/journal/entries', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.warn('Authenticated create journal failed, trying mock endpoint:', error);
+      try {
+        return await this.makeRequest('/journal/mock-entries', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+      } catch (mockError) {
+        console.warn('Mock endpoint also failed, using fallback response:', mockError);
+        return this.getMockJournalEntry(data.entry_text);
+      }
+    }
+  }
+
+  // Mood tracking endpoints
+  async getMoodLogs(): Promise<MoodLog[]> {
+    // Use mock data during development
+    if (USE_MOCK_DATA) {
+      console.log('Using mock mood data (development mode)');
+      return this.getMockMoodLogs();
+    }
+
+    try {
+      return await this.makeRequest('/mood/logs');
+    } catch (error) {
+      console.warn('Authenticated mood endpoint failed, trying mock endpoint:', error);
+      try {
+        return await this.makeRequest('/mood/mock-logs');
+      } catch (mockError) {
+        console.warn('Mock endpoint also failed, using fallback data:', mockError);
+        return this.getMockMoodLogs();
+      }
+    }
+  }
+
+  async createMoodLog(data: { mood_rating: number; note?: string }): Promise<MoodLog> {
+    // Use mock data during development
+    if (USE_MOCK_DATA) {
+      console.log('Using mock mood creation (development mode)');
+      return this.getMockMoodLog(data.mood_rating, data.note);
+    }
+
+    try {
+      return await this.makeRequest('/mood/logs', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.warn('Authenticated create mood failed, trying mock endpoint:', error);
+      try {
+        return await this.makeRequest('/mood/mock-logs', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+      } catch (mockError) {
+        console.warn('Mock endpoint also failed, using fallback response:', mockError);
+        return this.getMockMoodLog(data.mood_rating, data.note);
+      }
+    }
+  }
+
   // Test server connectivity
   async testConnection(): Promise<boolean> {
     try {
@@ -243,6 +351,74 @@ class ApiService {
         is_completed: Math.random() > 0.5 // Randomly completed or not
       }
     ];
+  }
+
+  // Mock journal methods
+  async getMockJournalEntries(): Promise<JournalEntry[]> {
+    const now = new Date().toISOString();
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    
+    return [
+      {
+        id: '1',
+        entry_text: 'Today was surprisingly good. I managed to complete my meditation session and felt more centered throughout the day. The breathing exercises really helped when I felt stressed about the meeting.',
+        sentiment_score: 0.7,
+        created_at: yesterday
+      },
+      {
+        id: '2',
+        entry_text: 'Woke up feeling anxious about the presentation. Used the mindfulness techniques to ground myself. Grateful for the tools I\'ve learned.',
+        sentiment_score: 0.2,
+        created_at: twoDaysAgo
+      }
+    ];
+  }
+
+  async getMockJournalEntry(entryText: string): Promise<JournalEntry> {
+    return {
+      id: Date.now().toString(),
+      entry_text: entryText,
+      sentiment_score: Math.random() * 0.8 + 0.1, // Random sentiment between 0.1 and 0.9
+      created_at: new Date().toISOString()
+    };
+  }
+
+  // Mock mood methods
+  async getMockMoodLogs(): Promise<MoodLog[]> {
+    const now = new Date().toISOString();
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    
+    return [
+      {
+        id: '1',
+        mood_rating: 4,
+        note: 'Feeling good after meditation',
+        timestamp: now
+      },
+      {
+        id: '2',
+        mood_rating: 3,
+        note: 'Okay day, some stress',
+        timestamp: yesterday
+      },
+      {
+        id: '3',
+        mood_rating: 5,
+        note: 'Great day!',
+        timestamp: twoDaysAgo
+      }
+    ];
+  }
+
+  async getMockMoodLog(moodRating: number, note?: string): Promise<MoodLog> {
+    return {
+      id: Date.now().toString(),
+      mood_rating: moodRating,
+      note: note || '',
+      timestamp: new Date().toISOString()
+    };
   }
 }
 
