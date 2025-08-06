@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.endpoints import activity, ai, auth, chat, content, home, users, streaks, admin
+from app.api.endpoints import activity, ai, auth, chat, content, home, users, streaks, admin, journal, mood
 from app.core.config import settings
 from app.db.database import engine
 from app.db.models import Base
@@ -35,6 +35,8 @@ app.include_router(ai.router, prefix="/ai", tags=["ai"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(streaks.router, prefix="/streaks", tags=["streaks"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
+app.include_router(journal.router, prefix="/journal", tags=["journal"])
+app.include_router(mood.router, prefix="/mood", tags=["mood"])
 
 
 @app.get("/")

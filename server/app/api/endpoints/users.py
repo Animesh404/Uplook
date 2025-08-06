@@ -93,16 +93,22 @@ async def complete_onboarding_simple(
         user_goal = UserGoal(user_id=current_user.id, goal_id=goal.id)
         db.add(user_goal)
 
-    # Handle user settings
+    # Handle user settings - convert array to dictionary format
+    reminder_times_dict = {
+        "morning": "morning" in onboarding_data.reminderTimes,
+        "noon": "noon" in onboarding_data.reminderTimes,
+        "evening": "evening" in onboarding_data.reminderTimes,
+    }
+    
     user_settings = (
         db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
     )
 
     if user_settings:
-        user_settings.reminder_times = onboarding_data.reminderTimes
+        user_settings.reminder_times = reminder_times_dict
     else:
         user_settings = UserSettings(
-            user_id=current_user.id, reminder_times=onboarding_data.reminderTimes
+            user_id=current_user.id, reminder_times=reminder_times_dict
         )
         db.add(user_settings)
 
@@ -144,16 +150,22 @@ async def onboard_user(
         user_goal = UserGoal(user_id=current_user.id, goal_id=goal.id)
         db.add(user_goal)
 
-    # Handle user settings
+    # Handle user settings - convert array to dictionary format
+    reminder_times_dict = {
+        "morning": "morning" in onboarding_data.reminderTimes,
+        "noon": "noon" in onboarding_data.reminderTimes,
+        "evening": "evening" in onboarding_data.reminderTimes,
+    }
+    
     user_settings = (
         db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
     )
 
     if user_settings:
-        user_settings.reminder_times = onboarding_data.reminderTimes
+        user_settings.reminder_times = reminder_times_dict
     else:
         user_settings = UserSettings(
-            user_id=current_user.id, reminder_times=onboarding_data.reminderTimes
+            user_id=current_user.id, reminder_times=reminder_times_dict
         )
         db.add(user_settings)
 

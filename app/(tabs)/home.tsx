@@ -8,6 +8,7 @@ import {
   ImageBackground,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from 'expo-router';
 import Logo from "../components/Logo";
 import ChatModal from "../components/ChatModal";
 import { useAuth } from '../contexts/AuthContext';
@@ -269,64 +270,68 @@ export default function HomeScreen() {
               }}
             >
               <View style={{ width: "48%" }}>
-                <ImageBackground
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1552234876-5fb207d2ce2F?w=500",
-                  }}
-                  style={{
-                    height: 128,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: 12,
-                  }}
-                  imageStyle={{ borderRadius: 16 }}
-                >
-                  <Text
-                    style={{ color: "white", fontWeight: "bold", fontSize: 16 }}
+                <TouchableOpacity onPress={() => router.push('/journal')}>
+                  <ImageBackground
+                    source={{
+                      uri: "https://images.unsplash.com/photo-1552234876-5fb207d2ce2F?w=500",
+                    }}
+                    style={{
+                      height: 128,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: 12,
+                    }}
+                    imageStyle={{ borderRadius: 16 }}
                   >
-                    Reflection time
-                  </Text>
-                </ImageBackground>
+                    <Text
+                      style={{ color: "white", fontWeight: "bold", fontSize: 16 }}
+                    >
+                      Journal & Reflection
+                    </Text>
+                  </ImageBackground>
+                </TouchableOpacity>
               </View>
               <View style={{ width: "48%" }}>
-                <ImageBackground
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1544991936-9464b5343a4b?w=500",
-                  }}
-                  style={{
-                    height: 128,
-                    justifyContent: "space-between",
-                    padding: 12,
-                    flexDirection: "row",
-                    alignItems: "flex-end",
-                  }}
-                  imageStyle={{ borderRadius: 16 }}
-                >
-                  <View>
-                    <Text style={{ color: "white", fontSize: 12 }}>
-                      Video coach
-                    </Text>
-                    <Text
+                <TouchableOpacity onPress={() => router.push('/content/video-1')}>
+                  <ImageBackground
+                    source={{
+                      uri: "https://images.unsplash.com/photo-1544991936-9464b5343a4b?w=500",
+                    }}
+                    style={{
+                      height: 128,
+                      justifyContent: "space-between",
+                      padding: 12,
+                      flexDirection: "row",
+                      alignItems: "flex-end",
+                    }}
+                    imageStyle={{ borderRadius: 16 }}
+                  >
+                    <View>
+                      <Text style={{ color: "white", fontSize: 12 }}>
+                        Video coach
+                      </Text>
+                      <Text
+                        style={{
+                          color: "white",
+                          fontWeight: "bold",
+                          fontSize: 16,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        Mindful Breathing
+                      </Text>
+                    </View>
+                    <View
                       style={{
-                        color: "white",
-                        fontWeight: "bold",
-                        fontSize: 16,
-                        flexWrap: "wrap",
+                        backgroundColor: "rgba(255,255,255,0.5)",
+                        borderRadius: 999,
+                        padding: 4,
                       }}
                     >
-                      How to be cope with anxiety
-                    </Text>
-                  </View>
-                  <View
-                    style={{
-                      backgroundColor: "rgba(255,255,255,0.5)",
-                      borderRadius: 999,
-                      padding: 4,
-                    }}
-                  >
-                    <Ionicons name="play" size={16} color="white" />
-                  </View>
-                </ImageBackground>
+                      <Ionicons name="play" size={16} color="white" />
+                    </View>
+                  </ImageBackground>
+                </TouchableOpacity>
               </View>
             </View>
           </View>

@@ -42,7 +42,7 @@ class OnboardingData(BaseModel):
     age: int
     email: EmailStr
     goals: List[str]
-    reminderTimes: List[str]
+    reminderTimes: List[str]  # Frontend sends: ["morning", "evening"]
 
 
 # Goal schemas
