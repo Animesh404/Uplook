@@ -109,7 +109,7 @@ function ResultsScreenContent() {
               
               <View className="space-y-3">
                 {personalSummaryItems.map((item) => (
-                  <View key={item.id} className="flex-row items-center bg-gray-50 rounded-xl p-3">
+                  <View key={item.id} className="flex-row items-center bg-gray-50 rounded-xl p-3 mb-4">
                     <View className="w-10 h-10 rounded-full items-center justify-center mr-3" style={{ backgroundColor: `${item.color}20` }}>
                       <Ionicons name={item.icon as any} size={20} color={item.color} />
                     </View>
@@ -129,7 +129,7 @@ function ResultsScreenContent() {
               
               <View className="space-y-3">
                 {planItems.map((item) => (
-                  <View key={item.id} className="flex-row items-center">
+                  <View key={item.id} className="flex-row items-center mb-4">
                     <View className="w-10 h-10 rounded-full items-center justify-center mr-3" style={{ backgroundColor: `${item.color}20` }}>
                       <Ionicons name={item.icon as any} size={20} color={item.color} />
                     </View>
@@ -142,11 +142,11 @@ function ResultsScreenContent() {
             </View>
 
             {/* Start Button */}
-            <View className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl p-6 shadow-lg">
-              <Text className="text-white text-lg font-semibold text-center mb-2">
+            <View className="bg-white rounded-2xl p-6 shadow-lg">
+              <Text className="text-lg text-blue-900 font-semibold text-center mb-2">
                 Ready to Begin Your Journey?
               </Text>
-              <Text className="text-teal-100 text-center mb-6">
+              <Text className="text-blue-900 text-center mb-6">
                 Start your personalized wellness plan today
               </Text>
               
