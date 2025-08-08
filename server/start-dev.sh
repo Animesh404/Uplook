@@ -34,8 +34,14 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 echo "📡 Starting FastAPI server with virtual environment..."
-source venv/bin/activate
-python3 main.py &
+if [[ "$OS" == "Windows_NT" ]]; then
+    echo "💻 Detected Windows OS"
+    source venv/Scripts/activate
+else
+    echo "💻 Detected Unix-like OS"
+    source venv/bin/activate
+fi
+python main.py &
 FASTAPI_PID=$!
 
 # Wait a moment for FastAPI to start

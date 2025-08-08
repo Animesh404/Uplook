@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Logo from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
@@ -109,10 +109,12 @@ export default function LibraryScreen() {
     return 'How to cope with anxiety';
   };
 
+  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" style={{  paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16   }}>
       <ScrollView className="flex-1">
-        <View className="px-6 pt-4 pb-8">
+        <View className="px-6 pt-4 pb-8" >
           {/* Header */}
           <View className="flex-row items-center justify-center w-full mb-6">
             <Logo size="small" />

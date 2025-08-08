@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, SafeAreaView, ScrollView, Alert, Image, TouchableOpacity } from 'react-native';
+import { View, Text, SafeAreaView, ScrollView, Alert, Image, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthGuard } from './components/AuthGuard';
@@ -40,9 +40,11 @@ function ResultsScreenContent() {
     { id: '4', label: 'Comparing to others', icon: 'git-compare', color: '#ca8a04' },
   ];
 
+  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+
   return (
     <SafeAreaView className="flex-1 bg-cyan-50">
-      <View className="flex-1 bg-gradient-to-b from-cyan-50 to-teal-100">
+      <View className="flex-1 bg-gradient-to-b from-cyan-50 to-teal-100" style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16 }}>
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="px-6 pt-4 pb-8">
             {/* Header */}

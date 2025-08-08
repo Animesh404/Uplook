@@ -1,16 +1,18 @@
 import React from 'react';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { ClerkProvider, tokenCache } from './lib/clerk';
 import { AuthProvider } from './contexts/AuthContext';
-import '../global.css'
+import '../global.css';
 
 export default function RootLayout() {
   return (
     <ClerkProvider 
       tokenCache={tokenCache}
-      publishableKey="pk_test_aGVscGluZy1lYXJ3aWctNjUuY2xlcmsuYWNjb3VudHMuZGV2JA"
+      publishableKey="pk_test_c3R1bm5pbmcta2l0ZS0xLmNsZXJrLmFjY291bnRzLmRldiQ"
     >
       <AuthProvider>
+        <StatusBar style="dark" backgroundColor="#f0fdf9" translucent={false} />
         <Stack
           screenOptions={{
             headerShown: false,

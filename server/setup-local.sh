@@ -51,9 +51,16 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
 
-# Activate virtual environment
-echo "🔧 Activating virtual environment..."
-source venv/bin/activate
+# setup-local.sh
+
+if [[ "$OS" == "Windows_NT" ]]; then
+    echo "💻 Detected Windows OS"
+    source venv/Scripts/activate
+else
+    echo "💻 Detected Unix-like OS"
+    source venv/bin/activate
+fi
+
 
 # Install dependencies
 echo "📦 Installing Python dependencies..."

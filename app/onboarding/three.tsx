@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert, Platform, StatusBar} from 'react-native';
 import { router } from 'expo-router';
 import { useOnboarding } from '../contexts/OnboardingContext'; // Import useOnboarding
 import { useAuth } from '../contexts/AuthContext';
@@ -116,9 +116,12 @@ export default function OnboardingThree() {
     return 'When would you like to be reminded?';
   };
 
+  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+
   return (
+    
     <SafeAreaView className="flex-1 bg-teal-100">
-      <View className="flex-1 px-6 pt-4">
+      <View className="flex-1 px-6 pt-4" style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16  }}>
         <ProgressHeader
           step={3}
           totalSteps={3}
