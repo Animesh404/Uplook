@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, Image, Platform, StatusBar} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthGuard } from './components/AuthGuard';
@@ -56,9 +56,11 @@ function CalculatingScreenContent() {
     router.push('/results');
   };
 
+  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+
   return (
     <SafeAreaView className="flex-1 bg-cyan-50">
-      <View className="flex-1 bg-gradient-to-b from-cyan-50 to-teal-100">
+      <View className="flex-1 bg-gradient-to-b from-cyan-50 to-teal-100" style={{  paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16   }}>
         <View className="flex-1 px-6 pt-4">
           {/* Header */}
           <View className="flex-row items-center justify-center w-full mb-8">

@@ -6,6 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ImageBackground,
+  Platform,
+  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from 'expo-router';
@@ -14,10 +16,12 @@ import ChatModal from "../components/ChatModal";
 import { useAuth } from '../contexts/AuthContext';
 import { useUser } from '@clerk/clerk-expo';
 
+const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+
 const Screen = ({ children }: { children: React.ReactNode }) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f0ffff" }}>
-      <View style={{ flex: 1 }}>{children}</View>
+      <View style={{ flex: 1,  paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16  }}>{children}</View>
     </SafeAreaView>
   );
 };

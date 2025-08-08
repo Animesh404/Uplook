@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, SafeAreaView, ScrollView, TouchableOpacity,Platform,StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../contexts/OnboardingContext';
@@ -66,67 +66,72 @@ export default function OnboardingTwo() {
     }
   };
 
+  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+
   return (
-    <SafeAreaView className="flex-1 bg-teal-100">
-      <View className="flex-1 px-6 pt-4">
-        <ProgressHeader
-          step={2}
-          totalSteps={3}
-          onBack={() => router.back()}
-        />
+    <View className="flex-1 bg-teal-100">
+      <SafeAreaView className="flex-1">
+        <View className="flex-1 px-6 pt-4" style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16 }}>
+          <ProgressHeader
+            step={2}
+            totalSteps={3}
+            onBack={() => router.back()}
+          />
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View className="bg-teal-100 rounded-xl p-6">
-            <Text className="text-2xl font-bold text-blue-900 mb-1">
-              What are your goals, {getUserFirstName()}?
-            </Text>
-            <Text className="text-blue-900 mb-6">
-              {getPersonalizedMessage()}
-            </Text>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View className="bg-teal-100 rounded-xl p-6">
+              <Text className="text-2xl font-bold text-blue-900 mb-1">
+                What are your goals, {getUserFirstName()}?
+              </Text>
+              <Text className="text-blue-900 mb-6">
+                {getPersonalizedMessage()}
+              </Text>
 
-            {goals.map(goal => (
-              <SelectableOption
-                key={goal.id}
-                icon={goal.icon as any}
-                label={goal.label}
-                selected={goal.selected}
-                onSelect={() => toggleGoal(goal.id)}
-              />
-            ))}
+              {goals.map(goal => (
+                <SelectableOption
+                  key={goal.id}
+                  icon={goal.icon as any}
+                  label={goal.label}
+                  selected={goal.selected}
+                  onSelect={() => toggleGoal(goal.id)}
+                />
+              ))}
 
-            <View className="mt-6">
-              <Button
-                label="Continue"
-                onPress={handleContinue}
-              />
+              <View className="mt-6">
+                <Button
+                  label="Continue"
+                  onPress={handleContinue}
+                />
 
-              <TouchableOpacity
-                className="mt-3"
-                onPress={handleSkip}
-              >
-                <Text className="text-center text-blue-900 py-4">
-                  Skip
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  className="mt-3"
+                  onPress={handleSkip}
+                >
+                  <Text className="text-center text-blue-900 py-4">
+                    Skip
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Progress indicator */}
+              <View className="mt-6 p-4 bg-white rounded-lg">
+                <Text className="text-sm text-gray-600 mb-2">Selected Goals:</Text>
+                {goals.filter(goal => goal.selected).length > 0 ? (
+                  goals.filter(goal => goal.selected).map(goal => (
+                    <View key={goal.id} className="flex-row items-center mb-1">
+                      <Ionicons name="checkmark-circle" size={16} color="#0d9488" />
+                      <Text className="text-sm text-gray-700 ml-2">{goal.label}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text className="text-sm text-gray-500 italic">No goals selected yet</Text>
+                )}
+              </View>
             </View>
-
-            {/* Progress indicator */}
-            <View className="mt-6 p-4 bg-white rounded-lg">
-              <Text className="text-sm text-gray-600 mb-2">Selected Goals:</Text>
-              {goals.filter(goal => goal.selected).length > 0 ? (
-                goals.filter(goal => goal.selected).map(goal => (
-                  <View key={goal.id} className="flex-row items-center mb-1">
-                    <Ionicons name="checkmark-circle" size={16} color="#0d9488" />
-                    <Text className="text-sm text-gray-700 ml-2">{goal.label}</Text>
-                  </View>
-                ))
-              ) : (
-                <Text className="text-sm text-gray-500 italic">No goals selected yet</Text>
-              )}
-            </View>
-          </View>
-        </ScrollView>
-      </View>
-    </SafeAreaView>
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    </View>
+    
   );
 }

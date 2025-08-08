@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Logo from '../components/Logo';
@@ -203,10 +203,12 @@ export default function ExploreScreen() {
     );
   };
 
+  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" style={{  paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16   }}>
       <ScrollView className="flex-1">
-        <View className="px-6 pt-4 pb-8">
+        <View className="px-6 pt-4 pb-8" >
           {/* Header */}
           <View className="flex-row items-center justify-center w-full mb-6">
             <Logo size="small" />

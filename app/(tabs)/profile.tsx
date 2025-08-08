@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { View, Text, SafeAreaView, TouchableOpacity, Alert, ScrollView, Platform, StatusBar } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useUser } from '@clerk/clerk-expo';
@@ -127,10 +127,12 @@ export default function ProfileScreen() {
     );
   };
 
+  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+
   return (
-    <SafeAreaView className="flex-1 bg-teal-100">
+    <SafeAreaView className="flex-1 " style={{backgroundColor: "#f0ffff", paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16 }}>
       <ScrollView className="flex-1">
-        <View className="flex-1 px-6 pt-4 pb-8">
+        <View className="flex-1 px-6 pt-4 pb-8" >
           {/* Header */}
           <View className="mb-8">
             <Text className="text-3xl font-bold text-blue-900 mb-2">
