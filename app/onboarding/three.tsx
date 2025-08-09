@@ -48,6 +48,7 @@ export default function OnboardingThree() {
         age: data.age,
         goals: data.goals,
         reminderTimes: selectedTimes,
+        onboarded: true,
       });
 
       router.push('/calculating');

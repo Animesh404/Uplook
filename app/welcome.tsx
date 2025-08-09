@@ -22,7 +22,7 @@ export default function WelcomeScreen() {
           
           <TouchableOpacity 
             className="mt-4 py-4"
-            onPress={() => router.push('./(tabs)/home')}
+            onPress={() => router.push('/sign-in')}
           >
             <Text className="text-center text-sky-600">
               I already have an account
