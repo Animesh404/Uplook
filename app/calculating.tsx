@@ -94,9 +94,9 @@ function CalculatingScreenContent() {
 
             {/* Progress Bar */}
             <View className="w-full mb-8">
-              <View className="w-full bg-white rounded-full h-3 mb-4">
+              <View className="w-full bg-gray-200 rounded-full h-3 mb-4">
                 <View 
-                  className="bg-gradient-to-r from-teal-500 to-teal-600 h-3 rounded-full transition-all duration-300"
+                  className="bg-teal-500 h-3 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </View>
@@ -106,16 +106,16 @@ function CalculatingScreenContent() {
             </View>
 
             {/* Continue Button */}
-            <View className="w-full">
+             <View className="w-full">
               <TouchableOpacity
                 onPress={handleContinue}
                 className={`
                   w-full py-4 rounded-xl flex-row items-center justify-center shadow-lg
-                  ${isDone ? 'bg-gradient-to-r from-teal-500 to-teal-600' : 'bg-gray-300'}
+                  ${isDone ? 'bg-teal-600' : 'bg-gray-400'} {/* Changed to solid teal-600 when done, darker gray when not */}
                 `}
                 disabled={!isDone}
               >
-                <Text className={`font-semibold text-lg mr-2 ${isDone ? 'text-white' : 'text-gray-500'}`}>
+                <Text className={`font-semibold text-lg mr-2 ${isDone ? 'text-white' : 'text-gray-700'}`}> {/* Darker gray for disabled text */}
                   {isDone ? 'Continue to Your Plan' : 'Please wait...'}
                 </Text>
                 {isDone && <Ionicons name="arrow-forward" size={20} color="white" />}
