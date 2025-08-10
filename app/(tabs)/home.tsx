@@ -274,7 +274,7 @@ export default function HomeScreen() {
               }}
             >
               <View style={{ width: "48%" }}>
-                <TouchableOpacity onPress={() => router.push('/journal')}>
+                <TouchableOpacity onPress={() => router.push('/clerk-test')}>
                   <ImageBackground
                     source={{
                       uri: "https://images.unsplash.com/photo-1552234876-5fb207d2ce2F?w=500",

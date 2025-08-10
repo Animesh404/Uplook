@@ -63,12 +63,18 @@ export interface MoodLog {
 }
 
 class ApiService {
+  private tokenProvider?: () => Promise<string | null>;
+
+  setTokenProvider(provider: () => Promise<string | null>) {
+    this.tokenProvider = provider;
+  }
+
   private async getAuthToken(): Promise<string | null> {
-    // In a real app, you'd get the Clerk token here
-    // For now, we'll use a placeholder or handle auth differently
     try {
-      // This would be replaced with actual Clerk token retrieval
-      return 'placeholder-token';
+      if (this.tokenProvider) {
+        return await this.tokenProvider();
+      }
+      return null;
     } catch (error) {
       console.error('Error getting auth token:', error);
       return null;

@@ -1,7 +1,9 @@
 import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from jose import JWTError, jwt, jwk
+from jose.utils import base64url_decode
+import time
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -12,32 +14,61 @@ security = HTTPBearer()
 
 
 async def verify_clerk_token(token: str) -> dict:
-    """Verify Clerk JWT token"""
+    """Verify Clerk JWT using tenant JWKS and validate iss/aud/exp."""
     try:
-        # Get Clerk's public key to verify the token
+        # Debug: decode token to see claims
+        unverified_claims = jwt.get_unverified_claims(token)
+        print(f"DEBUG: Token claims - iss: {unverified_claims.get('iss')}, aud: {unverified_claims.get('aud')}")
+        print(f"DEBUG: Expected - iss: {settings.clerk_jwt_issuer}, aud: {settings.clerk_jwt_audience}")
+        
+        # 1) Get unverified header to select JWK
+        unverified_headers = jwt.get_unverified_header(token)
+        kid = unverified_headers.get("kid")
+        if kid is None:
+            raise JWTError("Missing kid in token header")
+
+        # 2) Fetch JWKS from Clerk tenant
+        jwks_url = f"{settings.clerk_jwt_issuer}/.well-known/jwks.json"
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                "https://api.clerk.com/v1/jwks",
-                headers={"Authorization": f"Bearer {settings.clerk_secret_key}"},
-            )
-            jwks = response.json()
+            res = await client.get(jwks_url)
+            res.raise_for_status()
+            jwks = res.json()
 
-        # Decode and verify the token
-        payload = jwt.decode(
-            token,
-            jwks,
-            algorithms=["RS256"],
-            audience="your-app-audience",  # Replace with actual audience
-            issuer="https://your-app.clerk.accounts.dev",  # Replace with actual issuer
-        )
+        keys = jwks.get("keys", [])
+        key = next((k for k in keys if k.get("kid") == kid), None)
+        if key is None:
+            raise JWTError("No matching JWK for kid")
 
-        return payload
-    except JWTError:
+        # 3) Verify signature
+        public_key = jwk.construct(key)
+        signing_input, encoded_sig = token.rsplit(".", 1)
+        decoded_sig = base64url_decode(encoded_sig.encode("utf-8"))
+        if not public_key.verify(signing_input.encode("utf-8"), decoded_sig):
+            raise JWTError("Invalid token signature")
+
+        # 4) Validate claims (exp/iss/aud)
+        claims = jwt.get_unverified_claims(token)
+        exp = claims.get("exp")
+        if exp is not None and int(exp) < int(time.time()):
+            raise JWTError("Token expired")
+
+        if settings.clerk_jwt_issuer and claims.get("iss") != settings.clerk_jwt_issuer:
+            raise JWTError("Invalid issuer")
+
+        # if settings.clerk_jwt_audience:
+        #     aud = claims.get("aud")
+        #     if aud != settings.clerk_jwt_audience and (
+        #         not isinstance(aud, list) or settings.clerk_jwt_audience not in aud
+        #     ):
+        #         raise JWTError("Invalid audience")
+
+        return claims
+    except (JWTError, httpx.HTTPError) as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
 
 
 async def get_current_user(

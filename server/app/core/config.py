@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     # Clerk Configuration
     clerk_secret_key: str = "your_clerk_secret_key_here"
     clerk_webhook_secret: str = "your_clerk_webhook_secret_here"
+    clerk_jwt_issuer: str = "https://stunning-kite-1.clerk.accounts.dev"
+    clerk_jwt_audience: str = "authenticated"
+    # Optional: set this to a PEM-encoded RSA public key to verify JWTs without JWKS
+    clerk_jwt_public_key_pem: str = ""
 
     # AWS Configuration
     aws_access_key_id: str = "your_aws_access_key_id"
