@@ -78,8 +78,8 @@ class Goal(Base):
 class UserGoal(Base):
     __tablename__ = "user_goals"
 
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    goal_id = Column(Integer, ForeignKey("goals.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    goal_id = Column(Integer, ForeignKey("goals.id", ondelete="CASCADE"), primary_key=True)
 
     # Relationships
     user = relationship("User", back_populates="goals")
@@ -90,7 +90,7 @@ class UserSettings(Base):
     __tablename__ = "user_settings"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     reminder_times = Column(
         JSON, default={"morning": True, "noon": False, "evening": False}
     )
@@ -119,8 +119,8 @@ class ActivityLog(Base):
     __tablename__ = "activity_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    content_id = Column(Integer, ForeignKey("content.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    content_id = Column(Integer, ForeignKey("content.id", ondelete="CASCADE"), nullable=False)
     completed_at = Column(DateTime, default=func.now())
 
     # Relationships
@@ -132,7 +132,7 @@ class JournalEntry(Base):
     __tablename__ = "journal_entries"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     entry_text = Column(Text, nullable=False)
     sentiment_score = Column(Float, nullable=True)
     created_at = Column(DateTime, default=func.now())
@@ -145,7 +145,7 @@ class MoodLog(Base):
     __tablename__ = "mood_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     timestamp = Column(DateTime, default=func.now())
     raw_sensor_data = Column(JSON, nullable=False)
     calculated_mood_score = Column(Float, nullable=True)
@@ -183,8 +183,8 @@ class UserBadge(Base):
     __tablename__ = "user_badges"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    badge_id = Column(Integer, ForeignKey("badges.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    badge_id = Column(Integer, ForeignKey("badges.id", ondelete="CASCADE"), nullable=False)
     earned_at = Column(DateTime, default=func.now())
     progress = Column(Integer, default=0)  # Current progress towards badge
     is_completed = Column(Boolean, default=False)

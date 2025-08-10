@@ -3,12 +3,12 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database Configuration
-    database_url: str = "postgresql://username:password@localhost:5432/uplook_db"
+    database_url: str = "your_database_url_here"
 
     # Clerk Configuration
     clerk_secret_key: str = "your_clerk_secret_key_here"
     clerk_webhook_secret: str = "your_clerk_webhook_secret_here"
-    clerk_jwt_issuer: str = "https://stunning-kite-1.clerk.accounts.dev"
+    clerk_jwt_issuer: str = "your_clerk_jwt_issuer_here"
     clerk_jwt_audience: str = "authenticated"
     # Optional: set this to a PEM-encoded RSA public key to verify JWTs without JWKS
     clerk_jwt_public_key_pem: str = ""
