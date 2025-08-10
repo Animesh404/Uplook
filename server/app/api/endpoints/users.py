@@ -1,9 +1,10 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_active_user
+from app.core.security import get_current_active_user, verify_clerk_token
 from app.db.database import get_db
 from app.db.models import Goal, User, UserGoal, UserSettings
 from app.db.schemas import Goal as GoalSchema
@@ -13,6 +14,7 @@ from app.db.schemas import UserSettings as UserSettingsSchema
 from app.db.schemas import UserUpdate
 
 router = APIRouter()
+bearer_security = HTTPBearer()
 
 
 @router.get("/me", response_model=UserSchema)
@@ -46,34 +48,47 @@ async def update_user_profile(
 @router.post("/complete-onboarding", response_model=UserSchema)
 async def complete_onboarding_simple(
     onboarding_data: OnboardingData,
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_security),
     db: Session = Depends(get_db),
 ):
-    """Complete user onboarding process (simplified for testing)"""
-    
-    # For now, create a user without Clerk authentication
-    # TODO: Add proper Clerk authentication when webhook is working
-    
-    # Check if user exists by email
-    existing_user = db.query(User).filter(User.email == onboarding_data.email).first()
-    
-    if existing_user:
-        # Update existing user
-        existing_user.full_name = onboarding_data.fullName
-        existing_user.age = onboarding_data.age
-        existing_user.onboarded = True
-        current_user = existing_user
-    else:
-        # Create new user
-        current_user = User(
-            email=onboarding_data.email,
-            full_name=onboarding_data.fullName,
-            age=onboarding_data.age,
-            onboarded=True,
-            clerk_user_id=f"temp_{onboarding_data.email}"  # Temporary ID
-        )
-        db.add(current_user)
-        db.commit()
-        db.refresh(current_user)
+    """Complete user onboarding using Clerk auth (creates or updates the DB user)."""
+
+    # Verify Clerk token and extract subject (Clerk user ID)
+    token = credentials.credentials
+    claims = await verify_clerk_token(token)
+    clerk_user_id = claims.get("sub")
+    if not clerk_user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    # Prefer email from claims; fallback to form
+    email_from_token = claims.get("email")
+    user_email = email_from_token or onboarding_data.email
+    if not user_email:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
+
+    # Find existing user by clerk_user_id; if not found, create
+    current_user = db.query(User).filter(User.clerk_user_id == clerk_user_id).first()
+    if current_user is None:
+        # Check if an existing row with the same email exists (from older flow). Migrate it.
+        existing_by_email = db.query(User).filter(User.email == user_email).first()
+        if existing_by_email:
+            current_user = existing_by_email
+            current_user.clerk_user_id = clerk_user_id
+        else:
+            current_user = User(
+                clerk_user_id=clerk_user_id,
+                email=user_email,
+                full_name=onboarding_data.fullName,
+                age=onboarding_data.age,
+                onboarded=True,
+            )
+            db.add(current_user)
+
+    # Update user basic fields
+    current_user.full_name = onboarding_data.fullName
+    current_user.age = onboarding_data.age
+    current_user.email = user_email
+    current_user.onboarded = True
 
     # Handle user goals (same as original)
     # First, remove existing goals

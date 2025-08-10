@@ -11,6 +11,7 @@ type User = {
   goals: string[];
   reminderTimes: string[];
   onboarded: boolean;
+  role?: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
 };
 
 type AuthContextType = {
@@ -29,13 +30,30 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isSignedIn, signOut: clerkSignOut } = useClerkAuth();
+  const { isSignedIn, signOut: clerkSignOut, getToken } = useClerkAuth();
   const { user: clerkUser } = useUser();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
   useEffect(() => {
+    // Provide API service a token getter so protected endpoints can use real JWT
+    apiService.setTokenProvider(async () => {
+      try {
+        const sessionToken = await getToken?.();
+        console.log("Token length:", sessionToken?.length || 0);
+        if (sessionToken) {
+          // Decode JWT to see claims (for debugging)
+          const payload = JSON.parse(atob(sessionToken.split('.')[1]));
+          console.log("JWT claims:", { iss: payload.iss, aud: payload.aud, sub: payload.sub, exp: payload.exp });
+        }
+        return (sessionToken as string) || null;
+      } catch (err) {
+        console.log("Token error:", err);
+        return null;
+      }
+    });
+    
     checkAuthState();
   }, [isSignedIn, clerkUser]);
 
@@ -56,7 +74,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (onboardingStatus === 'true' && userData) {
           // User has completed onboarding
           console.log('User has completed onboarding');
-          setUser(JSON.parse(userData));
+          const parsedUser: User = JSON.parse(userData);
+
+          // Merge role from Clerk public metadata if not present in storage
+          const clerkRole = (clerkUser.publicMetadata as any)?.role as
+            | 'USER'
+            | 'ADMIN'
+            | 'SUPER_ADMIN'
+            | undefined;
+
+          let mergedUser: User = parsedUser;
+          if (!parsedUser.role && clerkRole) {
+            mergedUser = { ...parsedUser, role: clerkRole };
+            try {
+              await AsyncStorage.setItem('user_data', JSON.stringify(mergedUser));
+            } catch (persistErr) {
+              console.warn('Failed to persist merged user role:', persistErr);
+            }
+          }
+
+          // Try to fetch role from backend profile if we have a token
+          try {
+            const token = await getToken?.();
+            if (!token) throw new Error('No auth token for /users/me');
+            const profile = await apiService.getUserProfile();
+            const backendRole = (profile as any)?.role as
+              | 'USER'
+              | 'ADMIN'
+              | 'SUPER_ADMIN'
+              | undefined;
+            if (backendRole && backendRole !== mergedUser.role) {
+              mergedUser = { ...mergedUser, role: backendRole };
+              await AsyncStorage.setItem('user_data', JSON.stringify(mergedUser));
+            }
+          } catch (profileErr) {
+            // If fetching profile fails but we do have a token, attempt to upsert the user via onboarding API
+            try {
+              const token = await getToken?.();
+              if (token) {
+                const onboardingData: OnboardingData = {
+                  fullName: mergedUser.fullName,
+                  email: mergedUser.email,
+                  age: parseInt(mergedUser.age || '0'),
+                  goals: mergedUser.goals || [],
+                  reminderTimes: mergedUser.reminderTimes || [],
+                };
+                await apiService.completeOnboarding(onboardingData);
+                // Try profile again to pick up role
+                const profile = await apiService.getUserProfile();
+                const backendRole = (profile as any)?.role as
+                  | 'USER'
+                  | 'ADMIN'
+                  | 'SUPER_ADMIN'
+                  | undefined;
+                if (backendRole && backendRole !== mergedUser.role) {
+                  mergedUser = { ...mergedUser, role: backendRole };
+                  await AsyncStorage.setItem('user_data', JSON.stringify(mergedUser));
+                }
+              }
+            } catch {
+              console.log('Profile fetch failed or skipped; using local/clerk role if any');
+            }
+          }
+
+          setUser(mergedUser);
           setHasCompletedOnboarding(true);
         } else {
           // User is signed in but hasn't completed onboarding
@@ -72,6 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             goals: [],
             reminderTimes: [],  
             onboarded: false,
+            role: (clerkUser.publicMetadata as any)?.role as any,
           };
           setUser(tempUser);
         }
@@ -154,6 +236,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Try to save to backend (fallback to local storage if backend is not available)
       try {
+        
         console.log('Attempting to save onboarding data to backend...');
         const userProfile = await apiService.completeOnboarding(onboardingData);
         console.log('Successfully saved to backend:', userProfile);
@@ -167,10 +250,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           goals: userProfile.goals || [],
           reminderTimes: userProfile.reminder_times || [],
           onboarded: userProfile.onboarded,
+          role: (userProfile as any)?.role as any,
         };
 
         await login(newUser);
       } catch (backendError) {
+        // const token = await getToken?.({ template: 'supabase' });
+        // console.log("token", token);
         console.warn('Backend not available, saving locally:', backendError);
         
         // Fallback to local storage
@@ -182,6 +268,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           goals: onboardingData.goals,
           reminderTimes: onboardingData.reminderTimes,
           onboarded: true,
+          role: (clerkUser.publicMetadata as any)?.role as any,
         };
 
         await login(newUser);

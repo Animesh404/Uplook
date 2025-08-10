@@ -6,6 +6,24 @@ import { AuthProvider } from './contexts/AuthContext';
 import '../global.css';
 
 export default function RootLayout() {
+  if (__DEV__) {
+    // Suppress noisy Reanimated warnings in development terminal
+    const originalWarn = console.warn;
+    const originalLog = console.log;
+    const shouldSuppress = (msg: unknown) =>
+      typeof msg === 'string' && msg.startsWith('[Reanimated]');
+
+    console.warn = (...args: unknown[]) => {
+      if (args.length > 0 && shouldSuppress(args[0])) return;
+      originalWarn(...args as any);
+    };
+
+    console.log = (...args: unknown[]) => {
+      if (args.length > 0 && shouldSuppress(args[0])) return;
+      originalLog(...args as any);
+    };
+  }
+
   return (
     <ClerkProvider 
       tokenCache={tokenCache}
@@ -24,6 +42,7 @@ export default function RootLayout() {
           <Stack.Screen name="auth" />
           <Stack.Screen name="sign-in" />
           <Stack.Screen name="sign-up" />
+          <Stack.Screen name="clerk-test" />
           <Stack.Screen name="sign-in-phone" />
           <Stack.Screen name="admin" />
           <Stack.Screen name="welcome" />

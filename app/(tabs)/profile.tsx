@@ -306,8 +306,8 @@ export default function ProfileScreen() {
             </View>
           )}
 
-          {/* Admin Button - Show only for admin users */}
-          {user && (user as any).role === 'admin' && (
+          {/* Admin Button - Show only for admin or super_admin users */}
+          {user && ((user as any).role === 'admin' || (user as any).role === 'super_admin') && (
             <TouchableOpacity
               onPress={() => router.push('/admin')}
               className="bg-purple-500 rounded-lg p-4 flex-row items-center justify-center mb-4"

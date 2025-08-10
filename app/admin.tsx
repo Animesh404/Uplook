@@ -71,7 +71,8 @@ function AdminScreenContent() {
 
   useEffect(() => {
     // Check if user has admin access
-    if (!user || (user as any).role !== 'admin') {
+    const role = (user as any)?.role;
+    if (!user || (role !== 'admin' && role !== 'super_admin')) {
       Alert.alert('Access Denied', 'You do not have admin privileges.', [
         { text: 'OK', onPress: () => router.back() }
       ]);

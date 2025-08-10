@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Dimensions, Alert } from 'react-native';
-import { Video, ResizeMode } from 'expo-video';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
@@ -18,37 +18,65 @@ export default function VideoPlayer({
   onComplete, 
   autoPlay = false 
 }: VideoPlayerProps) {
-  const [status, setStatus] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
-  const video = useRef<Video>(null);
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  
+  const player = useVideoPlayer(videoUrl, (player) => {
+    player.loop = false;
+    if (autoPlay) {
+      player.play();
+    }
+  });
+
+  useEffect(() => {
+    const subscription = player.addListener('playingChange', (event) => {
+      setIsPlaying(event.isPlaying);
+    });
+
+    const statusSubscription = player.addListener('statusChange', (event) => {
+      setIsLoading(event.status !== 'readyToPlay');
+      if (event.status === 'readyToPlay') {
+        setDuration(player.duration);
+      }
+    });
+
+    const timeSubscription = player.addListener('timeUpdate', (event) => {
+      setCurrentTime(event.currentTime);
+      
+      // Check if video is complete (within 0.1 seconds of duration)
+      if (duration > 0 && event.currentTime >= duration - 0.1 && onComplete) {
+        onComplete();
+      }
+    });
+
+    return () => {
+      subscription?.remove();
+      statusSubscription?.remove();
+      timeSubscription?.remove();
+    };
+  }, [player, duration, onComplete]);
 
   const handlePlayPause = () => {
-    if (status.isPlaying) {
-      video.current?.pauseAsync();
+    if (isPlaying) {
+      player.pause();
     } else {
-      video.current?.playAsync();
+      player.play();
     }
   };
 
-  const handlePlaybackStatusUpdate = (playbackStatus: any) => {
-    setStatus(playbackStatus);
-    setIsLoading(playbackStatus.isLoaded ? false : true);
-    
-    // Handle video completion
-    if (playbackStatus.didJustFinish && onComplete) {
-      onComplete();
-    }
-  };
-
-  const formatTime = (milliseconds: number) => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
+  const formatTime = (seconds: number) => {
+    const totalSeconds = Math.floor(seconds);
     const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const remainingSeconds = totalSeconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   const handleFullscreen = () => {
-    video.current?.presentFullscreenPlayer();
+    // Note: Fullscreen functionality may need to be implemented differently with expo-video
+    // This is a placeholder for now
+    console.log('Fullscreen requested');
   };
 
   return (
@@ -60,15 +88,11 @@ export default function VideoPlayer({
       )}
       
       <View style={{ height: width * 0.56 }} className="relative">
-        <Video
-          ref={video}
-          source={{ uri: videoUrl }}
+        <VideoView
+          player={player}
           style={{ flex: 1 }}
-          resizeMode={ResizeMode.CONTAIN}
-          shouldPlay={autoPlay}
-          isLooping={false}
-          onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
-          useNativeControls={false}
+          allowsFullscreen
+          nativeControls={false}
         />
         
         {/* Custom Controls Overlay */}
@@ -79,7 +103,7 @@ export default function VideoPlayer({
             </View>
           )}
           
-          {!isLoading && !status.isPlaying && (
+          {!isLoading && !isPlaying && (
             <TouchableOpacity
               onPress={handlePlayPause}
               className="bg-black bg-opacity-50 p-4 rounded-full"
@@ -90,12 +114,12 @@ export default function VideoPlayer({
         </View>
         
         {/* Bottom Controls */}
-        {status.isLoaded && (
+        {!isLoading && duration > 0 && (
           <View className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 p-4">
             <View className="flex-row items-center justify-between">
               <TouchableOpacity onPress={handlePlayPause}>
                 <Ionicons 
-                  name={status.isPlaying ? "pause" : "play"} 
+                  name={isPlaying ? "pause" : "play"} 
                   size={24} 
                   color="white" 
                 />
@@ -106,14 +130,14 @@ export default function VideoPlayer({
                   <View 
                     className="bg-teal-500 h-1 rounded-full"
                     style={{ 
-                      width: `${(status.positionMillis / status.durationMillis) * 100}%` 
+                      width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` 
                     }}
                   />
                 </View>
               </View>
               
               <Text className="text-white text-sm">
-                {formatTime(status.positionMillis || 0)} / {formatTime(status.durationMillis || 0)}
+                {formatTime(currentTime)} / {formatTime(duration)}
               </Text>
               
               <TouchableOpacity onPress={handleFullscreen} className="ml-4">
