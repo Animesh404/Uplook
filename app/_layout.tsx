@@ -1,4 +1,5 @@
 import React from 'react';
+import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ClerkProvider, tokenCache } from './lib/clerk';
@@ -24,10 +25,12 @@ export default function RootLayout() {
     };
   }
 
+  const publishableKey = Constants.expoConfig?.extra?.eas?.clerk_public_key;
+
   return (
     <ClerkProvider 
       tokenCache={tokenCache}
-      publishableKey="pk_test_c3R1bm5pbmcta2l0ZS0xLmNsZXJrLmFjY291bnRzLmRldiQ"
+      publishableKey={publishableKey}
     >
       <AuthProvider>
         <StatusBar style="dark" backgroundColor="#f0fdf9" translucent={false} />
