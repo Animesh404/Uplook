@@ -16,6 +16,7 @@ import ChatModal from "../components/ChatModal";
 import { useAuth } from '../contexts/AuthContext';
 import { useUser } from '@clerk/clerk-expo';
 
+
 const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 
 const Screen = ({ children }: { children: React.ReactNode }) => {
@@ -54,6 +55,13 @@ export default function HomeScreen() {
       year: 'numeric' 
     });
   };
+
+  const activityBackgroundImages = [
+    require('../../assets/images/gratitude.jpeg'), // Image for "Fill out gratitude journal"
+    require('../../assets/images/meditate.jpeg'), // Image for "Meditate"
+    require('../../assets/images/learning.jpeg'), // Image for "Learning module"
+    require('../../assets/images/quiz.jpeg'),     // Image for "Quiz"
+  ];
 
   // Get personalized activities based on user goals
   const getPersonalizedActivities = () => {
@@ -217,16 +225,27 @@ export default function HomeScreen() {
             >
               <View style={{ width: "65%" }}>
                 <ImageBackground
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1506126613408-4e0e0f7de58e?w=500",
-                  }}
+                  source={require('../../assets/images/mindful.jpeg')}
                   style={{
                     height: 128,
+                    width: "100%",
                     justifyContent: "flex-end",
-                    padding: 12,
+                    padding: 8,
                   }}
                   imageStyle={{ borderRadius: 16 }}
                 >
+                  <View
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(42, 191, 234, 0.6)', // Blue overlay with 60% opacity
+                        borderRadius: 16,
+                        
+                      }}
+                    />
                   <Text
                     style={{
                       color: "white",
@@ -241,16 +260,14 @@ export default function HomeScreen() {
                   </Text>
                 </ImageBackground>
               </View>
-              <View style={{ width: "32%" }}>
+              <View style={{ width: "35%" }}>
                 <ImageBackground
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1595147545958-5433ohned84d?w=500",
-                  }}
+                  source={require('../../assets/images/sleepy.jpeg')}
                   style={{
                     height: 128,
                     justifyContent: "center",
                     alignItems: "center",
-                    padding: 12,
+                    padding: 8,
                   }}
                   imageStyle={{ borderRadius: 16 }}
                 >
@@ -276,14 +293,12 @@ export default function HomeScreen() {
               <View style={{ width: "48%" }}>
                 <TouchableOpacity onPress={() => router.push('/clerk-test')}>
                   <ImageBackground
-                    source={{
-                      uri: "https://images.unsplash.com/photo-1552234876-5fb207d2ce2F?w=500",
-                    }}
+                    source={require('../../assets/images/reflection.jpeg')}
                     style={{
                       height: 128,
                       justifyContent: "center",
                       alignItems: "center",
-                      padding: 12,
+                      padding: 8,
                     }}
                     imageStyle={{ borderRadius: 16 }}
                   >
@@ -298,13 +313,11 @@ export default function HomeScreen() {
               <View style={{ width: "48%" }}>
                 <TouchableOpacity onPress={() => router.push('/content/video-1')}>
                   <ImageBackground
-                    source={{
-                      uri: "https://images.unsplash.com/photo-1544991936-9464b5343a4b?w=500",
-                    }}
+                    source={require('../../assets/images/video.jpeg')}
                     style={{
                       height: 128,
                       justifyContent: "space-between",
-                      padding: 12,
+                      padding: 8,
                       flexDirection: "row",
                       alignItems: "flex-end",
                     }}
@@ -320,6 +333,7 @@ export default function HomeScreen() {
                           fontWeight: "bold",
                           fontSize: 16,
                           flexWrap: "wrap",
+                          paddingRight: 2,
                         }}
                       >
                         Mindful Breathing
@@ -332,7 +346,7 @@ export default function HomeScreen() {
                         padding: 4,
                       }}
                     >
-                      <Ionicons name="play" size={16} color="white" />
+                      <Ionicons name="play" size={12} color="white" />
                     </View>
                   </ImageBackground>
                 </TouchableOpacity>
@@ -362,9 +376,7 @@ export default function HomeScreen() {
               {getPersonalizedActivities().map((activity, index) => (
                 <View key={index} style={{ width: "48%", marginBottom: 12 }}>
                   <ImageBackground
-                    source={{
-                      uri: `https://source.unsplash.com/featured/?nature,${index}`,
-                    }}
+                    source={activityBackgroundImages[index % activityBackgroundImages.length]}
                     style={{
                       height: 128,
                       justifyContent: "center",
