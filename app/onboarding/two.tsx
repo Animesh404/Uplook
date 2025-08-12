@@ -69,17 +69,17 @@ export default function OnboardingTwo() {
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 
   return (
-    <View className="flex-1 bg-teal-100">
+    <View className="flex-1 bg-cyan-50">
       <SafeAreaView className="flex-1">
-        <View className="flex-1 px-6 pt-4" style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16 }}>
+        <View className="flex-1 px-4 pt-4" style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16 }}>
           <ProgressHeader
             step={2}
             totalSteps={3}
             onBack={() => router.back()}
           />
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View className="bg-teal-100 rounded-xl p-6">
+          <ScrollView showsVerticalScrollIndicator={false} className="flex-1 -mx-4">
+            <View className="bg-teal-200 rounded-3xl p-6  mt-4">
               <Text className="text-2xl font-bold text-blue-900 mb-1">
                 What are your goals, {getUserFirstName()}?
               </Text>
@@ -98,19 +98,17 @@ export default function OnboardingTwo() {
               ))}
 
               <View className="mt-6">
-                <Button
-                  label="Continue"
-                  onPress={handleContinue}
-                />
+                <View className= "mb-4">
+                  <Button
+                    label="Continue"
+                    onPress={handleContinue}
+                  />
+                </View>
+                
 
-                <TouchableOpacity
-                  className="mt-3"
-                  onPress={handleSkip}
-                >
-                  <Text className="text-center text-blue-900 py-4">
-                    Skip
-                  </Text>
-                </TouchableOpacity>
+              <TouchableOpacity className="bg-cyan-300/60 rounded-2xl py-4 px-6" onPress={handleSkip}>
+                <Text className="text-center text-blue-900 font-semibold text-lg">Skip</Text>
+              </TouchableOpacity>
               </View>
 
               {/* Progress indicator */}

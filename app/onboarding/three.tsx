@@ -120,70 +120,72 @@ export default function OnboardingThree() {
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 
   return (
-    
-    <SafeAreaView className="flex-1 bg-teal-100">
-      <View className="flex-1 px-6 pt-4" style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16  }}>
-        <ProgressHeader
-          step={3}
-          totalSteps={3}
-          onBack={() => router.back()}
+    <View className="flex-1 bg-cyan-50 px-4">
+  {/* Header */}
+  <View style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16 }}>
+    <ProgressHeader
+      step={3}
+      totalSteps={3}
+      onBack={() => router.back()}
+    />
+  </View>
+
+  {/* Bottom sheet style container */}
+  <View className="flex-1 bg-teal-200 rounded-t-3xl overflow-hidden -mx-4">
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      bounces={false}
+      contentContainerStyle={{ padding: 24 }}
+    >
+      <Text className="text-2xl font-bold text-blue-900 mb-1">
+        {getPersonalizedTitle()}
+      </Text>
+      <Text className="text-blue-900 mb-6">
+        {getPersonalizedMessage()}
+      </Text>
+
+      {reminderTimes.map(time => (
+        <SelectableOption
+          key={time.id}
+          icon={time.icon as any}
+          label={time.label}
+          selected={time.selected}
+          onSelect={() => toggleReminderTime(time.id)}
         />
+      ))}
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View className="bg-teal-100 rounded-xl p-6">
-            <Text className="text-2xl font-bold text-blue-900 mb-1">
-              {getPersonalizedTitle()}
-            </Text>
-            <Text className="text-blue-900 mb-6">
-              {getPersonalizedMessage()}
-            </Text>
 
-            {reminderTimes.map(time => (
-              <SelectableOption
-                key={time.id}
-                icon={time.icon as any}
-                label={time.label}
-                selected={time.selected}
-                onSelect={() => toggleReminderTime(time.id)}
-              />
-            ))}
+      <View className="mt-6">
 
-            <View className="mt-6">
-              <Button
-                label="Complete Setup"
-                onPress={handleContinue}
-              />
+      <View className= "mb-4">
+      <Button label="Complete Setup" onPress={handleContinue} />
+                      </View>
+        
 
-              <TouchableOpacity
-                className="mt-3"
-                onPress={handleSkip}
-              >
-                <Text className="text-center text-blue-900 py-4">
-                  Skip
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Summary of user's choices */}
-            <View className="mt-6 p-4 bg-white rounded-lg">
-              <Text className="text-sm text-gray-600 mb-2">Your Setup Summary:</Text>
-              <Text className="text-xs text-gray-500 mb-1">Name: {data.fullName || 'Not provided'}</Text>
-              <Text className="text-xs text-gray-500 mb-1">Age: {data.age || 'Not provided'}</Text>
-              <Text className="text-xs text-gray-500 mb-1">Email: {data.email || 'Not provided'}</Text>
-              {data.goals && data.goals.length > 0 && (
-                <Text className="text-xs text-gray-500 mb-1">
-                  Goals: {data.goals.join(', ')}
-                </Text>
-              )}
-              {reminderTimes.filter(time => time.selected).length > 0 && (
-                <Text className="text-xs text-gray-500">
-                  Reminders: {reminderTimes.filter(time => time.selected).map(time => time.label).join(', ')}
-                </Text>
-              )}
-            </View>
-          </View>
-        </ScrollView>
+                      <TouchableOpacity className="bg-cyan-300/60 rounded-2xl py-4 px-6" onPress={handleSkip}>
+                      <Text className="text-center text-blue-900 font-semibold text-lg">Skip</Text>
+                    </TouchableOpacity>
       </View>
-    </SafeAreaView>
+
+      <View className="mt-6 p-4 bg-white rounded-lg">
+        <Text className="text-sm text-gray-600 mb-2">Your Setup Summary:</Text>
+        <Text className="text-xs text-gray-500 mb-1">Name: {data.fullName || 'Not provided'}</Text>
+        <Text className="text-xs text-gray-500 mb-1">Age: {data.age || 'Not provided'}</Text>
+        <Text className="text-xs text-gray-500 mb-1">Email: {data.email || 'Not provided'}</Text>
+        {data.goals && data.goals.length > 0 && (
+          <Text className="text-xs text-gray-500 mb-1">
+            Goals: {data.goals.join(', ')}
+          </Text>
+        )}
+        {reminderTimes.filter(time => time.selected).length > 0 && (
+          <Text className="text-xs text-gray-500">
+            Reminders: {reminderTimes.filter(time => time.selected).map(time => time.label).join(', ')}
+          </Text>
+        )}
+      </View>
+    </ScrollView>
+  </View>
+</View>
+
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, SafeAreaView, TextInput, TouchableOpacity, Alert, Platform, StatusBar } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -195,10 +195,15 @@ export default function SignUpScreen() {
     }
   };
 
+  // Get status bar height
+    const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+  
+
   if (showVerification) {
     return (
       <SafeAreaView className="flex-1 bg-teal-100">
-        <View className="flex-1 px-6 pt-4">
+        
+        <View className="flex-1 px-6 pt-4" style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16  }}>
           {/* Header */}
           <TouchableOpacity 
             onPress={() => setShowVerification(false)}
@@ -267,7 +272,7 @@ export default function SignUpScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-teal-100">
-      <View className="flex-1 px-6 pt-4">
+      <View className="flex-1 px-6 pt-4" style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16  }}>
         {/* Header */}
         <TouchableOpacity 
           onPress={() => router.back()}
