@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, SafeAreaView, ScrollView, Alert, Image, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthGuard } from './components/AuthGuard';
+import { useOnboarding } from './contexts/OnboardingContext';
 
 export default function ResultsScreen() {
   return (
@@ -13,6 +14,75 @@ export default function ResultsScreen() {
 }
 
 function ResultsScreenContent() {
+  const { data } = useOnboarding();
+
+  // Derive a simple, explainable growth projection from onboarding data
+  const growth = useMemo(() => {
+    const goalsCount = (data.goals || []).length;
+    const reminders = (data.reminderTimes || []).length;
+
+    // Base today score reflects current self-view (more goals selected => lower starting score)
+    const today = Math.max(10, 50 - goalsCount * 5);
+
+    // Consistency and focus increase growth
+    const monthBoost = reminders * 6 + goalsCount * 4 + 10; // base improvement
+    const oneMonth = Math.min(100, today + monthBoost);
+
+    // Continued consistency compounds growth
+    const threeMonths = Math.min(100, oneMonth + (reminders * 8 + goalsCount * 6 + 10));
+
+    return { today, oneMonth, threeMonths };
+  }, [data.goals, data.reminderTimes]);
+
+  // Map goals to personal summary talking points (kept short and positive)
+  const personalSummaryItems = useMemo(() => {
+    const items: { id: string; label: string; icon: string; color: string }[] = [];
+    const goals = (data.goals || []).map(g => g.toLowerCase());
+
+    if (goals.includes('self-confidence')) {
+      items.push(
+        { id: 'ps1', label: 'Lack of self‑trust', icon: 'shield', color: '#dc2626' },
+        { id: 'ps2', label: 'Comparing to others', icon: 'git-compare', color: '#ca8a04' },
+      );
+    }
+    if (goals.includes('stress management')) {
+      items.push(
+        { id: 'ps3', label: 'Fear of rejection', icon: 'people', color: '#ea580c' },
+        { id: 'ps4', label: 'Strong inner‑critique', icon: 'alert-circle', color: '#d97706' },
+      );
+    }
+    if (goals.includes('sleep')) {
+      items.push({ id: 'ps5', label: 'Irregular wind‑down routine', icon: 'moon', color: '#0ea5e9' });
+    }
+    if (items.length === 0) {
+      items.push(
+        { id: 'ps6', label: 'Building consistent habits', icon: 'sparkles', color: '#0284c7' },
+        { id: 'ps7', label: 'Staying kind to yourself', icon: 'heart', color: '#ef4444' },
+      );
+    }
+    return items.slice(0, 4);
+  }, [data.goals]);
+
+  // Build a plan from goals + reminders
+  const planItems = useMemo(() => {
+    const goals = (data.goals || []).map(g => g.toLowerCase());
+    const items: { id: string; label: string; icon: string; color: string }[] = [];
+
+    items.push({ id: 'plan1', label: 'Learning modules for improvement', icon: 'book', color: '#0d9488' });
+    if (goals.includes('meditation') || goals.includes('stress management')) {
+      items.push({ id: 'plan2', label: 'Daily meditations', icon: 'leaf', color: '#0891b2' });
+    }
+    items.push({ id: 'plan3', label: 'Daily reflection quizzes and journal', icon: 'create', color: '#0ea5e9' });
+    if (goals.includes('self-confidence') || goals.includes('meditation')) {
+      items.push({ id: 'plan4', label: 'Video coach lessons', icon: 'videocam', color: '#0284c7' });
+    }
+    if (goals.includes('sleep')) {
+      items.push({ id: 'plan5', label: 'Spoken word and music for your mind improvement', icon: 'musical-notes', color: '#0369a1' });
+    }
+    items.push({ id: 'plan6', label: 'Customer support', icon: 'chatbubble-ellipses', color: '#075985' });
+
+    return items;
+  }, [data.goals]);
   const handleStartToday = async () => {
     try {
       // User data is already saved in AuthContext from onboarding
@@ -24,21 +94,11 @@ function ResultsScreenContent() {
     }
   };
 
-  const planItems = [
-    { id: '1', label: 'Learning modules for improvement', icon: 'book', color: '#0d9488' },
-    { id: '2', label: 'Daily meditations', icon: 'leaf', color: '#0891b2' },
-    { id: '3', label: 'Daily reflection quizzes and journal', icon: 'create', color: '#0ea5e9' },
-    { id: '4', label: 'Video coach lessons', icon: 'videocam', color: '#0284c7' },
-    { id: '5', label: 'Spoken word and music for your mind improvement', icon: 'musical-notes', color: '#0369a1' },
-    { id: '6', label: 'Customer support', icon: 'chatbubble-ellipses', color: '#075985' },
-  ];
-
-  const personalSummaryItems = [
-    { id: '1', label: 'Lack of self-trust', icon: 'shield', color: '#dc2626' },
-    { id: '2', label: 'Fear of rejection', icon: 'people', color: '#ea580c' },
-    { id: '3', label: 'Being too critical', icon: 'alert-circle', color: '#d97706' },
-    { id: '4', label: 'Comparing to others', icon: 'git-compare', color: '#ca8a04' },
-  ];
+  // Helper to scale bar heights (container height: 128 per design)
+  const barHeight = (value: number) => {
+    const clamped = Math.max(0, Math.min(100, value));
+    return (clamped / 100) * 128;
+  };
 
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 
@@ -64,38 +124,42 @@ function ResultsScreenContent() {
                   <Ionicons name="checkmark-circle" size={32} color="#0d9488" />
                 </View>
                 <Text className="text-2xl font-bold text-blue-900 mb-2 text-center">
-                  Your Plan is Ready!
+                  Based on your answers, we
                 </Text>
                 <Text className="text-blue-700 text-center text-lg">
-                  Based on your answers, we've created a personalized self-improvement plan
+                  prepared a self‑improvement plan for you
                 </Text>
               </View>
               
               {/* Growth potential graph */}
               <View className="mb-6">
                 <Text className="text-lg font-semibold text-blue-900 mb-2">
-                  Your Growth Journey
+                  Your growth potential graph
                 </Text>
                 <Text className="text-sm text-blue-700 mb-4">
-                  Expected self-esteem improvement over time
+                  Time × Self esteem level
                 </Text>
                 
-                <View className="flex-row justify-between items-end h-32 bg-gradient-to-b from-teal-50 to-teal-100 rounded-xl p-4">
-                  <View className="items-center">
-                    <View className="w-8 bg-gradient-to-t from-teal-500 to-teal-600 h-8 mb-2 rounded" />
-                    <Text className="text-xs text-blue-900 font-medium">Today</Text>
+                <View style={{ height: 128, backgroundColor: '#e6f7f7', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#d0f0ef' }}>
+                  {/* grid lines */}
+                  <View style={{ position: 'absolute', top: 16, left: 16, right: 16 }}>
+                    {[0,1,2,3].map(i => (
+                      <View key={i} style={{ height: 1, backgroundColor: '#d9f0f0', marginBottom: 24 }} />
+                    ))}
                   </View>
-                  <View className="items-center">
-                    <View className="w-8 bg-gradient-to-t from-teal-500 to-teal-600 h-20 mb-2 rounded" />
-                    <Text className="text-xs text-blue-900 font-medium">1 month</Text>
-                  </View>
-                  <View className="items-center">
-                    <View className="w-8 bg-gradient-to-t from-teal-500 to-teal-600 h-28 mb-2 rounded" />
-                    <Text className="text-xs text-blue-900 font-medium">2 months</Text>
-                  </View>
-                  <View className="items-center">
-                    <View className="w-8 bg-gradient-to-t from-teal-500 to-teal-600 h-32 mb-2 rounded" />
-                    <Text className="text-xs text-blue-900 font-medium">3 months</Text>
+                  <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <View style={{ alignItems: 'center' }}>
+                      <View style={{ width: 20, height: barHeight(growth.today), backgroundColor: '#0d9488', borderRadius: 6, marginBottom: 8 }} />
+                      <Text className="text-xs text-blue-900 font-medium">Today</Text>
+                    </View>
+                    <View style={{ alignItems: 'center' }}>
+                      <View style={{ width: 20, height: barHeight(growth.oneMonth), backgroundColor: '#0d9488', borderRadius: 6, marginBottom: 8 }} />
+                      <Text className="text-xs text-blue-900 font-medium">1 month</Text>
+                    </View>
+                    <View style={{ alignItems: 'center' }}>
+                      <View style={{ width: 20, height: barHeight(growth.threeMonths), backgroundColor: '#0d9488', borderRadius: 6, marginBottom: 8 }} />
+                      <Text className="text-xs text-blue-900 font-medium">3 months</Text>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -103,9 +167,7 @@ function ResultsScreenContent() {
             
             {/* Personal summary */}
             <View className="bg-white rounded-2xl p-6 mb-6 shadow-lg">
-              <Text className="text-lg font-semibold text-blue-900 mb-4">
-                Areas for Growth
-              </Text>
+              <Text className="text-lg font-semibold text-blue-900 mb-4">Your personal summary</Text>
               
               <View className="space-y-3">
                 {personalSummaryItems.map((item) => (
@@ -123,9 +185,7 @@ function ResultsScreenContent() {
 
             {/* Your Plan */}
             <View className="bg-white rounded-2xl p-6 mb-6 shadow-lg">
-              <Text className="text-lg font-semibold text-blue-900 mb-4">
-                What's Included in Your Plan
-              </Text>
+              <Text className="text-lg font-semibold text-blue-900 mb-4">Your plan includes</Text>
               
               <View className="space-y-3">
                 {planItems.map((item) => (
@@ -150,14 +210,9 @@ function ResultsScreenContent() {
                 Start your personalized wellness plan today
               </Text>
               
-              <TouchableOpacity
-                onPress={handleStartToday}
-                className="bg-white rounded-xl py-4 flex-row items-center justify-center shadow-lg"
-              >
-                <Text className="text-teal-600 font-semibold text-lg mr-2">
-                  Start Today
-                </Text>
-                <Ionicons name="rocket" size={20} color="#0d9488" />
+              <TouchableOpacity onPress={handleStartToday} className="bg-indigo-600 rounded-2xl py-4 flex-row items-center justify-center">
+                <Text className="text-white font-semibold text-lg mr-2">Start today</Text>
+                <Ionicons name="rocket" size={20} color="#ffffff" />
               </TouchableOpacity>
             </View>
           </View>
