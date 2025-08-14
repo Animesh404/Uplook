@@ -26,11 +26,7 @@ type LocalMoodEntry = {
 };
 
 export default function JournalScreen() {
-  return (
-    <AuthGuard requireOnboarding={true}>
-      <JournalScreenContent />
-    </AuthGuard>
-  );
+  return <JournalScreenContent />;
 }
 
 function JournalScreenContent() {

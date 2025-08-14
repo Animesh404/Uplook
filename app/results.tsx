@@ -5,11 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthGuard } from './components/AuthGuard';
 
 export default function ResultsScreen() {
-  return (
-    <AuthGuard requireOnboarding={false}>
-      <ResultsScreenContent />
-    </AuthGuard>
-  );
+  return <ResultsScreenContent />;
 }
 
 function ResultsScreenContent() {

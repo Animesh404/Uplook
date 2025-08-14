@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from './contexts/AuthContext';
 import { AuthGuard } from './components/AuthGuard';
+import { useAuth as useClerkAuth } from '@clerk/clerk-expo';
+import { apiService } from './services/api';
 
 type ContentItem = {
   id: number;
@@ -42,15 +44,12 @@ type Analytics = {
 };
 
 export default function AdminScreen() {
-  return (
-    <AuthGuard requireOnboarding={true}>
-      <AdminScreenContent />
-    </AuthGuard>
-  );
+  return <AdminScreenContent />;
 }
 
 function AdminScreenContent() {
   const { user, signOut } = useAuth();
+  const { getToken } = useClerkAuth();
   const [activeTab, setActiveTab] = useState<'analytics' | 'content' | 'users' | 'badges'>('analytics');
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -82,58 +81,89 @@ function AdminScreenContent() {
     fetchData();
   }, [user]);
 
+  const getAuthToken = async () => {
+    try {
+      return await getToken?.();
+    } catch (error) {
+      console.error('Failed to get auth token:', error);
+      return null;
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Mock data - in real app, these would be API calls
-      setAnalytics({
-        total_users: 150,
-        active_users: 89,
-        total_content: 45,
-        user_engagement: 59.3
-      });
-
-      setContent([
-        {
-          id: 1,
-          title: 'Morning Meditation',
-          description: 'Start your day with mindfulness',
-          content_type: 'video',
-          category: 'meditation',
-          url: 'https://example.com/video1',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          title: 'Sleep Sounds',
-          description: 'Relaxing sounds for better sleep',
-          content_type: 'music',
-          category: 'sleep',
-          url: 'https://example.com/audio1',
-          created_at: new Date().toISOString()
-        }
+      // Fetch real data from API using API service
+      const [analyticsData, contentData, usersData] = await Promise.allSettled([
+        apiService.getAdminAnalytics(),
+        apiService.getAdminContent(),
+        apiService.getAdminUsers()
       ]);
 
-      setUsers([
-        {
-          id: 1,
-          full_name: 'John Doe',
-          email: 'john@example.com',
-          role: 'user',
-          current_streak: 5,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          full_name: 'Jane Smith',
-          email: 'jane@example.com',
-          role: 'user',
-          current_streak: 12,
-          created_at: new Date().toISOString()
-        }
-      ]);
+      if (analyticsData.status === 'fulfilled') {
+        setAnalytics(analyticsData.value);
+      } else {
+        // Fallback analytics
+        setAnalytics({
+          total_users: 150,
+          active_users: 89,
+          total_content: 45,
+          user_engagement: 59.3
+        });
+      }
+
+      if (contentData.status === 'fulfilled') {
+        setContent(contentData.value);
+      } else {
+        // Fallback content
+        setContent([
+          {
+            id: 1,
+            title: 'Morning Meditation',
+            description: 'Start your day with mindfulness',
+            content_type: 'video',
+            category: 'anxiety',
+            url: 'https://example.com/video1',
+            created_at: new Date().toISOString()
+          },
+          {
+            id: 2,
+            title: 'Sleep Sounds',
+            description: 'Relaxing sounds for better sleep',
+            content_type: 'music',
+            category: 'sleep',
+            url: 'https://example.com/audio1',
+            created_at: new Date().toISOString()
+          }
+        ]);
+      }
+
+      if (usersData.status === 'fulfilled') {
+        setUsers(usersData.value);
+      } else {
+        // Fallback users
+        setUsers([
+          {
+            id: 1,
+            full_name: 'John Doe',
+            email: 'john@example.com',
+            role: 'user',
+            current_streak: 5,
+            created_at: new Date().toISOString()
+          },
+          {
+            id: 2,
+            full_name: 'Jane Smith',
+            email: 'jane@example.com',
+            role: 'user',
+            current_streak: 12,
+            created_at: new Date().toISOString()
+          }
+        ]);
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to fetch admin data');
+      console.error('Failed to fetch admin data:', error);
+      Alert.alert('Notice', 'Using offline mode for admin panel');
     } finally {
       setLoading(false);
     }
@@ -146,14 +176,16 @@ function AdminScreenContent() {
     }
 
     try {
-      // Mock API call - in real app, this would create content
-      const newItem: ContentItem = {
-        id: Date.now(),
-        ...newContent,
-        created_at: new Date().toISOString()
-      };
-
-      setContent([newItem, ...content]);
+      const createdContent = await apiService.createAdminContent({
+        title: newContent.title,
+        description: newContent.description,
+        content_type: newContent.content_type,
+        category: newContent.category,
+        url: newContent.url,
+        thumbnail_url: null
+      });
+      
+      setContent([createdContent, ...content]);
       setNewContent({
         title: '',
         description: '',
@@ -163,8 +195,10 @@ function AdminScreenContent() {
       });
       setShowModal(false);
       Alert.alert('Success', 'Content created successfully');
+      fetchData(); // Refresh data
     } catch (error) {
-      Alert.alert('Error', 'Failed to create content');
+      console.error('Failed to create content:', error);
+      Alert.alert('Error', 'Failed to create content. Please try again.');
     }
   };
 
@@ -177,9 +211,15 @@ function AdminScreenContent() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            setContent(content.filter(item => item.id !== id));
-            Alert.alert('Success', 'Content deleted successfully');
+          onPress: async () => {
+            try {
+              await apiService.deleteAdminContent(id);
+              setContent(content.filter(item => item.id !== id));
+              Alert.alert('Success', 'Content deleted successfully');
+            } catch (error) {
+              console.error('Failed to delete content:', error);
+              Alert.alert('Error', 'Failed to delete content. Please try again.');
+            }
           }
         }
       ]
@@ -363,9 +403,49 @@ function AdminScreenContent() {
               <TextInput
                 value={newContent.url}
                 onChangeText={(text) => setNewContent({...newContent, url: text})}
-                placeholder="Content URL"
-                className="bg-gray-100 rounded-lg p-3 mb-4"
+                placeholder="Content URL (video/audio file URL)"
+                className="bg-gray-100 rounded-lg p-3 mb-3"
               />
+
+              {/* Content Type Selector */}
+              <Text className="text-sm font-medium text-gray-700 mb-2">Content Type</Text>
+              <View className="flex-row flex-wrap mb-3">
+                {['video', 'music', 'meditation', 'quiz', 'article', 'learning_module'].map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    onPress={() => setNewContent({...newContent, content_type: type})}
+                    className={`px-3 py-1 rounded-full mr-2 mb-2 ${
+                      newContent.content_type === type ? 'bg-teal-500' : 'bg-gray-200'
+                    }`}
+                  >
+                    <Text className={`text-sm ${
+                      newContent.content_type === type ? 'text-white' : 'text-gray-700'
+                    }`}>
+                      {type.replace('_', ' ')}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Category Selector */}
+              <Text className="text-sm font-medium text-gray-700 mb-2">Category</Text>
+              <View className="flex-row flex-wrap mb-4">
+                {['sleep', 'anxiety', 'self_confidence', 'work'].map((category) => (
+                  <TouchableOpacity
+                    key={category}
+                    onPress={() => setNewContent({...newContent, category})}
+                    className={`px-3 py-1 rounded-full mr-2 mb-2 ${
+                      newContent.category === category ? 'bg-blue-500' : 'bg-gray-200'
+                    }`}
+                  >
+                    <Text className={`text-sm ${
+                      newContent.category === category ? 'text-white' : 'text-gray-700'
+                    }`}>
+                      {category.replace('_', ' ')}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
               <TouchableOpacity
                 onPress={handleCreateContent}

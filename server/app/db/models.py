@@ -41,6 +41,26 @@ class UserRoleEnum(enum.Enum):
     SUPER_ADMIN = "super_admin"
 
 
+class PlanStatusEnum(enum.Enum):
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    ARCHIVED = "archived"
+
+
+class CardDifficultyEnum(enum.Enum):
+    EASY = "easy"
+    MEDIUM = "medium"
+    HARD = "hard"
+
+
+class ReviewResponseEnum(enum.Enum):
+    AGAIN = "again"
+    HARD = "hard"
+    GOOD = "good"
+    EASY = "easy"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -63,6 +83,7 @@ class User(Base):
     journal_entries = relationship("JournalEntry", back_populates="user")
     mood_logs = relationship("MoodLog", back_populates="user")
     user_badges = relationship("UserBadge", back_populates="user")
+    plans = relationship("Plan", back_populates="user")
 
 
 class Goal(Base):
@@ -127,6 +148,103 @@ class ActivityLog(Base):
     user = relationship("User", back_populates="activity_logs")
     content = relationship("Content", back_populates="activity_logs")
 
+
+class Plan(Base):
+    __tablename__ = "plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(Enum(CategoryEnum), nullable=False)
+    status = Column(Enum(PlanStatusEnum), default=PlanStatusEnum.ACTIVE)
+    target_daily_reviews = Column(Integer, default=20)
+    estimated_completion_days = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    last_reviewed_at = Column(DateTime, nullable=True)
+
+    # Relationships
+    user = relationship("User", back_populates="plans")
+    cards = relationship("PlanCard", back_populates="plan")
+    sessions = relationship("ReviewSession", back_populates="plan")
+
+
+class PlanCard(Base):
+    __tablename__ = "plan_cards"
+
+    id = Column(Integer, primary_key=True, index=True)
+    plan_id = Column(Integer, ForeignKey("plans.id", ondelete="CASCADE"), nullable=False)
+    content_id = Column(Integer, ForeignKey("content.id", ondelete="CASCADE"), nullable=True)
+
+    # Card content (custom flashcards)
+    front_text = Column(Text, nullable=True)
+    back_text = Column(Text, nullable=True)
+    front_image_url = Column(String, nullable=True)
+    back_image_url = Column(String, nullable=True)
+    audio_url = Column(String, nullable=True)
+
+    # Spaced repetition data
+    ease_factor = Column(Float, default=2.5)
+    interval_days = Column(Integer, default=1)
+    repetitions = Column(Integer, default=0)
+    next_review_date = Column(DateTime, nullable=True)
+    last_reviewed_at = Column(DateTime, nullable=True)
+
+    # Additional metadata
+    difficulty = Column(Enum(CardDifficultyEnum), default=CardDifficultyEnum.MEDIUM)
+    tags = Column(JSON, default=list)
+    is_new = Column(Boolean, default=True)
+    times_reviewed = Column(Integer, default=0)
+    times_correct = Column(Integer, default=0)
+    average_response_time = Column(Float, nullable=True)
+
+    created_at = Column(DateTime, default=func.now())
+
+    # Relationships
+    plan = relationship("Plan", back_populates="cards")
+    content = relationship("Content")
+    reviews = relationship("CardReview", back_populates="card")
+
+
+class ReviewSession(Base):
+    __tablename__ = "review_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    plan_id = Column(Integer, ForeignKey("plans.id", ondelete="CASCADE"), nullable=False)
+
+    started_at = Column(DateTime, default=func.now())
+    ended_at = Column(DateTime, nullable=True)
+    total_cards_reviewed = Column(Integer, default=0)
+    correct_answers = Column(Integer, default=0)
+    session_duration_seconds = Column(Integer, nullable=True)
+
+    # Relationships
+    user = relationship("User")
+    plan = relationship("Plan", back_populates="sessions")
+    reviews = relationship("CardReview", back_populates="session")
+
+
+class CardReview(Base):
+    __tablename__ = "card_reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("review_sessions.id", ondelete="CASCADE"), nullable=False)
+    card_id = Column(Integer, ForeignKey("plan_cards.id", ondelete="CASCADE"), nullable=False)
+
+    response = Column(Enum(ReviewResponseEnum), nullable=False)
+    response_time_seconds = Column(Float, nullable=False)
+    was_correct = Column(Boolean, nullable=False)
+    confidence_level = Column(Integer, nullable=True)
+
+    previous_ease_factor = Column(Float, nullable=True)
+    previous_interval = Column(Integer, nullable=True)
+
+    created_at = Column(DateTime, default=func.now())
+
+    # Relationships
+    session = relationship("ReviewSession", back_populates="reviews")
+    card = relationship("PlanCard", back_populates="reviews")
 
 class JournalEntry(Base):
     __tablename__ = "journal_entries"

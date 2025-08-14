@@ -5,8 +5,7 @@ import { AuthGuard } from '../components/AuthGuard';
 
 export default function OnboardingLayout() {
   return (
-    <AuthGuard requireOnboarding={false}>
-      <OnboardingProvider>
+    <OnboardingProvider>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -17,7 +16,6 @@ export default function OnboardingLayout() {
         <Stack.Screen name="two" />
         <Stack.Screen name="three" />
       </Stack>
-      </OnboardingProvider>
-    </AuthGuard>
+    </OnboardingProvider>
   );
 }

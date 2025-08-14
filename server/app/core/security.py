@@ -55,12 +55,13 @@ async def verify_clerk_token(token: str) -> dict:
         if settings.clerk_jwt_issuer and claims.get("iss") != settings.clerk_jwt_issuer:
             raise JWTError("Invalid issuer")
 
-        # if settings.clerk_jwt_audience:
-        #     aud = claims.get("aud")
-        #     if aud != settings.clerk_jwt_audience and (
-        #         not isinstance(aud, list) or settings.clerk_jwt_audience not in aud
-        #     ):
-        #         raise JWTError("Invalid audience")
+        # Make audience validation optional - Clerk tokens often don't have aud claim
+        if settings.clerk_jwt_audience and settings.clerk_jwt_audience != "authenticated":
+            aud = claims.get("aud")
+            if aud and aud != settings.clerk_jwt_audience and (
+                not isinstance(aud, list) or settings.clerk_jwt_audience not in aud
+            ):
+                raise JWTError("Invalid audience")
 
         return claims
     except (JWTError, httpx.HTTPError) as e:
@@ -100,6 +101,7 @@ async def get_current_active_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """Get current active user (can be extended to check if user is active/banned)"""
+    print(f"DEBUG: Current user - {current_user.id}")
     return current_user
 
 

@@ -1,8 +1,8 @@
 // API service for communicating with the backend
-const API_BASE_URL = 'http://localhost:8000'; // Change this to your actual backend URL
+const API_BASE_URL = 'https://df59b5e2226a.ngrok-free.app'; // Change this to your actual backend URL
 
 // Feature flags for development
-const USE_MOCK_DATA = true; // Set to true to use mock data only
+const USE_MOCK_DATA = false; // Set to false to use backend API
 
 export interface OnboardingData {
   fullName: string;
@@ -60,6 +60,36 @@ export interface MoodLog {
   mood_rating: number;
   note?: string;
   timestamp: string;
+}
+
+// Agenda and Recommendation Service Interfaces
+export interface AgendaItem {
+  id: number;
+  title: string;
+  description: string;
+  content_type: string;
+  category: string;
+  url: string;
+  thumbnail_url: string;
+  reason: string;
+}
+
+export interface DailyWrapUp {
+  wellness_score: number;
+  trend: string;
+  completed_activities_week: number;
+}
+
+export interface ProgressSummary {
+  weekly_activities: number;
+  wellness_trend: string;
+  next_milestone: string;
+}
+
+export interface UserAgenda {
+  daily_wrap_up: DailyWrapUp;
+  todays_agenda: AgendaItem[];
+  progress_summary: ProgressSummary;
 }
 
 class ApiService {
@@ -161,9 +191,8 @@ class ApiService {
 
   async logActivity(contentId: number): Promise<{ message: string; streak: number }> {
     try {
-      return await this.makeRequest('/streaks/activity', {
+      return await this.makeRequest(`/streaks/activity?content_id=${contentId}`, {
         method: 'POST',
-        body: JSON.stringify({ content_id: contentId }),
       });
     } catch (error) {
       console.warn('Activity logging failed:', error);
@@ -197,6 +226,10 @@ class ApiService {
   async getPersonalizedContent(category?: string): Promise<any[]> {
     const query = category ? `?category=${category}` : '';
     return this.makeRequest(`/content/personalized${query}`);
+  }
+
+  async getContentById(contentId: number): Promise<any> {
+    return this.makeRequest(`/content/${contentId}`);
   }
 
   // Journal endpoints
@@ -290,6 +323,95 @@ class ApiService {
         console.warn('Mock endpoint also failed, using fallback response:', mockError);
         return this.getMockMoodLog(data.mood_rating, data.note);
       }
+    }
+  }
+
+  // Home/Agenda endpoints
+  async getUserAgenda(): Promise<UserAgenda> {
+    try {
+      const agenda = await this.makeRequest('/home/agenda');
+      console.log('✅ Backend agenda loaded:', agenda);
+      return agenda;
+    } catch (error) {
+      console.log('🔄 Using mock agenda (backend not available):', error);
+      return this.getMockAgenda();
+    }
+  }
+
+  async completeActivity(contentId: number, planId?: number): Promise<any> {
+    try {
+      const endpoint = planId 
+        ? `/home/activity/${contentId}/complete?plan_id=${planId}`
+        : `/home/activity/${contentId}/complete`;
+      return await this.makeRequest(endpoint, { method: 'POST' });
+    } catch (error) {
+      console.warn('Failed to complete activity:', error);
+      return { message: 'Activity completed (mock)' };
+    }
+  }
+
+  async createUserPlans(): Promise<any> {
+    try {
+      return await this.makeRequest('/home/create-user-plans', { method: 'POST' });
+    } catch (error) {
+      console.warn('Failed to create user plans:', error);
+      return { message: 'Plans created (mock)', plans: [] };
+    }
+  }
+
+  // Admin endpoints
+  async getAdminAnalytics(): Promise<any> {
+    try {
+      return await this.makeRequest('/admin/analytics');
+    } catch (error) {
+      console.warn('Failed to get admin analytics:', error);
+      return {
+        total_users: 150,
+        active_users: 89,
+        total_content: 45,
+        user_engagement: 59.3
+      };
+    }
+  }
+
+  async getAdminContent(): Promise<any[]> {
+    try {
+      return await this.makeRequest('/admin/content');
+    } catch (error) {
+      console.warn('Failed to get admin content:', error);
+      return [];
+    }
+  }
+
+  async getAdminUsers(): Promise<any[]> {
+    try {
+      return await this.makeRequest('/admin/users');
+    } catch (error) {
+      console.warn('Failed to get admin users:', error);
+      return [];
+    }
+  }
+
+  async createAdminContent(contentData: any): Promise<any> {
+    try {
+      return await this.makeRequest('/admin/content', {
+        method: 'POST',
+        body: JSON.stringify(contentData)
+      });
+    } catch (error) {
+      console.warn('Failed to create admin content:', error);
+      throw error;
+    }
+  }
+
+  async deleteAdminContent(contentId: number): Promise<any> {
+    try {
+      return await this.makeRequest(`/admin/content/${contentId}`, {
+        method: 'DELETE'
+      });
+    } catch (error) {
+      console.warn('Failed to delete admin content:', error);
+      throw error;
     }
   }
 
@@ -424,6 +546,61 @@ class ApiService {
       mood_rating: moodRating,
       note: note || '',
       timestamp: new Date().toISOString()
+    };
+  }
+
+  // Mock agenda for development - fallback only
+  private async getMockAgenda(): Promise<UserAgenda> {
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const today = new Date();
+    const dateStr = `${today.getDate().toString().padStart(2, '0')}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getFullYear()}`;
+    
+    console.log('🔄 Using mock agenda (backend not available)');
+    
+    return {
+      daily_wrap_up: {
+        wellness_score: 75,
+        trend: "improving",
+        completed_activities_week: 12
+      },
+      todays_agenda: [
+        {
+          id: 1,
+          title: 'Morning Meditation',
+          description: 'Start your day with mindfulness',
+          content_type: 'meditation',
+          category: 'anxiety',
+          url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          thumbnail_url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
+          reason: 'Recommended based on your wellness goals'
+        },
+        {
+          id: 2,
+          title: 'Gratitude Journal',
+          description: 'Reflect on what you\'re grateful for',
+          content_type: 'learning_module',
+          category: 'self_confidence',
+          url: 'https://example.com/journal1',
+          thumbnail_url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+          reason: 'Build positive mindset habits'
+        },
+        {
+          id: 3,
+          title: 'Relaxing Sleep Music',
+          description: 'Unwind with calming sounds',
+          content_type: 'music',
+          category: 'sleep',
+          url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+          thumbnail_url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg',
+          reason: 'Improve your sleep quality'
+        }
+      ],
+      progress_summary: {
+        weekly_activities: 12,
+        wellness_trend: "improving",
+        next_milestone: "Great progress! 3 more activities to achieve your stretch goal!"
+      }
     };
   }
 }

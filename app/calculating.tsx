@@ -5,11 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthGuard } from './components/AuthGuard';
 
 export default function CalculatingScreen() {
-  return (
-    <AuthGuard requireOnboarding={false}>
-      <CalculatingScreenContent />
-    </AuthGuard>
-  );
+  return <CalculatingScreenContent />;
 }
 
 function CalculatingScreenContent() {

@@ -71,7 +71,7 @@ export default function ChatModal({ isVisible, onClose }: ChatModalProps) {
       const chatRoom = 'wellness-chat';
       const userClerkId = clerkUser?.id || 'anonymous';
       
-      const wsUrl = `ws://localhost:8000/chat/ws/${chatRoom}?user_clerk_id=${userClerkId}`;
+      const wsUrl = `wss://df59b5e2226a.ngrok-free.app/chat/ws/${chatRoom}?user_clerk_id=${userClerkId}`;
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => {
