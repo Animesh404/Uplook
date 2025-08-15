@@ -1,40 +1,19 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { router } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 
 interface AuthGuardProps {
   children: React.ReactNode;
   requireOnboarding?: boolean;
+  fallback?: React.ReactNode;
 }
 
 export const AuthGuard: React.FC<AuthGuardProps> = ({ 
   children, 
-  requireOnboarding = true 
+  requireOnboarding = true,
+  fallback
 }) => {
   const { isSignedIn, isLoading, hasCompletedOnboarding } = useAuth();
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isSignedIn) {
-        console.log('AuthGuard: User not signed in, redirecting to auth');
-        // Use setTimeout to ensure navigation context is ready
-        setTimeout(() => {
-          router.replace('/auth');
-        }, 100);
-        return;
-      }
-
-      if (requireOnboarding && !hasCompletedOnboarding) {
-        console.log('AuthGuard: User hasn\'t completed onboarding, redirecting to onboarding');
-        // Use setTimeout to ensure navigation context is ready
-        setTimeout(() => {
-          router.replace('/onboarding/one');
-        }, 100);
-        return;
-      }
-    }
-  }, [isLoading, isSignedIn, hasCompletedOnboarding, requireOnboarding]);
 
   // Show loading while checking auth state
   if (isLoading) {
@@ -45,18 +24,18 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     );
   }
 
-  // If not signed in, show loading while redirecting
+  // If not signed in, show fallback or loading
   if (!isSignedIn) {
-    return (
+    return fallback || (
       <View className="flex-1 items-center justify-center bg-cyan-50">
         <ActivityIndicator size="large" color="#0d9488" />
       </View>
     );
   }
 
-  // If onboarding is required but not completed, show loading while redirecting
+  // If onboarding is required but not completed, show fallback or loading
   if (requireOnboarding && !hasCompletedOnboarding) {
-    return (
+    return fallback || (
       <View className="flex-1 items-center justify-center bg-cyan-50">
         <ActivityIndicator size="large" color="#0d9488" />
       </View>

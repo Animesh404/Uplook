@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import JournalEditor from './components/JournalEditor';
-import MoodTracker from './components/MoodTracker';
-import { AuthGuard } from './components/AuthGuard';
-import { useAuth } from './contexts/AuthContext';
-import { apiService, JournalEntry, MoodLog } from './services/api';
+import JournalEditor from '../components/JournalEditor';
+import MoodTracker from '../components/MoodTracker';
+import { useAuth } from '../contexts/AuthContext';
+import { apiService, JournalEntry, MoodLog } from '../services/api';
 
 // Local types for UI compatibility
 type LocalJournalEntry = {

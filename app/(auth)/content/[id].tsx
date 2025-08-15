@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useAuth } from '../contexts/AuthContext';
-import VideoPlayer from '../components/VideoPlayer';
-import { apiService } from '../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import VideoPlayer from '../../components/VideoPlayer';
+import { apiService } from '../../services/api';
 
 interface ContentItem {
   id: number;
