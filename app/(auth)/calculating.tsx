@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity} from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
 import Logo from '../components/Logo';
 
 export default function CalculatingScreen() {
@@ -58,11 +57,9 @@ function CalculatingScreenContent() {
       <View className="flex-1 bg-gradient-to-b from-cyan-50 to-teal-100 px-6 pt-8" >
         <View className="flex-1 px-6 pt-4">
           {/* Header */}
-          <View className="flex-row items-center justify-center w-full">
+          <View className="flex-row items-center justify-center w-full mb-8">
             <Logo size="small" />
-            <Text className="text-[#2C3E50] text-[18px] font-medium">
-              Uplook
-            </Text>
+            <Text className="text-[#2C3E50] text-[18px] font-medium">Uplook</Text>
           </View>
           
           <View className="flex-1 items-center justify-center">
