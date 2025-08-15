@@ -11,19 +11,25 @@ type ProgressHeaderProps = {
 
 export default function ProgressHeader({ step, totalSteps, onBack }: ProgressHeaderProps) {
   return (
-    <View className="flex-row items-center justify-between w-full mb-4">
+    <View className="flex-row items-center justify-between w-full mb-4 relative">
+      {/* Back Button */}
       <TouchableOpacity onPress={onBack} className="p-2">
         <Ionicons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
-      
-      <View className="flex-row items-center">
+
+      {/* Centered Logo Group */}
+      <View className="absolute left-1/2 -translate-x-1/2 flex-row items-center">
         <Logo size="small" />
-        <Text className="ml-2 text-teal-600 font-medium">Uplook</Text>
+        <Text className="text-[#2C3E50] text-[18px] font-medium">
+          Uplook
+        </Text>
       </View>
-      
-      <Text className="text-gray-500">
+
+      {/* Step Counter */}
+      <Text className="text-[#4B42B6]">
         {step}/{totalSteps}
       </Text>
     </View>
+
   );
 }

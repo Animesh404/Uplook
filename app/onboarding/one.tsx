@@ -41,14 +41,15 @@ export default function OnboardingOne() {
   }
 
   return (
-    <View className="flex-1 bg-cyan-50 px-4">
+    <View className="flex-1 bg-[#F0FFFF] px-4">
       {/* Header */}
       <View style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16 }}>
         <ProgressHeader step={1} totalSteps={3} onBack={() => router.back()} />
       </View>
 
       {/* Bottom sheet style container */}
-      <View className="flex-1 bg-teal-200 rounded-t-3xl overflow-hidden shadow-lg -mx-4">
+      <View className="flex-1 bg-[#FFFFFF] rounded-t-3xl overflow-hidden shadow-lg -mx-4">
+      <View className="flex-1 bg-[#B7F2F1] rounded-t-3xl overflow-hidden shadow-lg ">
         <ScrollView
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -64,7 +65,7 @@ export default function OnboardingOne() {
               value={fullName}
               onChangeText={setFullName}
               placeholder="Enter your full name"
-              className="bg-cyan-50 rounded-2xl p-4 text-gray-800 shadow-sm"
+              className="bg-[#DEFAF5] rounded-3xl p-4 text-gray-800 shadow-sm"
               placeholderTextColor="#9ca3af"
             />
           </View>
@@ -77,7 +78,7 @@ export default function OnboardingOne() {
               onChangeText={setAge}
               placeholder="Enter your age"
               keyboardType="number-pad"
-              className="bg-cyan-50 rounded-2xl p-4 text-gray-800 shadow-sm"
+              className="bg-[#DEFAF5] rounded-3xl p-4 text-gray-800 shadow-sm"
               placeholderTextColor="#9ca3af"
             />
           </View>
@@ -91,7 +92,7 @@ export default function OnboardingOne() {
               placeholder="Enter your email address"
               keyboardType="email-address"
               autoCapitalize="none"
-              className="bg-cyan-50 rounded-2xl p-4 text-gray-800 shadow-sm"
+              className="bg-[#DEFAF5] rounded-3xl p-4 text-gray-800 shadow-sm"
               placeholderTextColor="#9ca3af"
               editable={!clerkUser?.primaryEmailAddress?.emailAddress}
             />
@@ -116,16 +117,21 @@ export default function OnboardingOne() {
 
           {/* Continue button */}
           <View className="mb-4">
-            <Button label="Continue" onPress={handleContinue} />
+            <Button 
+              label="Continue" 
+              onPress={handleContinue} 
+              variant="primary" 
+            />
           </View>
 
-          {/* Skip button */}
-          <TouchableOpacity
-            className="bg-cyan-300/60 rounded-2xl py-4 px-6"
-            onPress={handleSkip}
-          >
-            <Text className="text-center text-blue-900 font-semibold text-lg">Skip</Text>
-          </TouchableOpacity>
+          <View className="mb-4">
+            <Button 
+              label="Skip" 
+              onPress={handleSkip} 
+              variant="secondary" 
+            />
+          </View>
+
 
           {/* Debug Info */}
           <View className="mt-6 p-4 bg-white/70 rounded-2xl">
@@ -137,6 +143,9 @@ export default function OnboardingOne() {
           </View>
         </ScrollView>
       </View>
+
+      </View>
+      
     </View>
   )
 }
