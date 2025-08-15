@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   Linking,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -307,75 +307,88 @@ export default function ContentScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-      {/* Header */}
-      <View style={{ 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        paddingHorizontal: 20, 
-        paddingVertical: 16,
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e5e7eb'
-      }}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#374151" />
-        </TouchableOpacity>
-        <Text style={{ 
-          fontSize: 18, 
-          fontWeight: '600', 
-          color: '#111827', 
-          marginLeft: 16,
-          flex: 1
-        }}>
-          {content?.title}
-        </Text>
-      </View>
-
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
-        {/* Category Badge */}
-        <View style={{ 
-          backgroundColor: getCategoryColor(content?.category || ''), 
-          borderRadius: 20, 
-          paddingHorizontal: 12, 
-          paddingVertical: 6,
-          alignSelf: 'flex-start',
-          marginBottom: 16
-        }}>
-          <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
-            {content?.category?.replace('_', ' ').toUpperCase()}
+   
+      <SafeAreaView
+        edges={['top', 'bottom']}
+        style={{ flex: 1, backgroundColor: '#F0FFFF' }}
+      >
+        {/* Header */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            paddingVertical: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: '#e5e7eb',
+          }}
+        >
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#374151" />
+          </TouchableOpacity>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: 'bold',
+              color: '#2C3E50',
+              flex: 1,
+              textAlign: 'center',
+            }}
+          >
+            {content?.title}
           </Text>
         </View>
-
-        {/* Content Title and Description */}
-        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#111827', marginBottom: 12 }}>
-          {content?.title}
-        </Text>
-        
-        <Text style={{ fontSize: 16, lineHeight: 24, color: '#6b7280', marginBottom: 24 }}>
-          {content?.description}
-        </Text>
-
-        {/* Dynamic Content Rendering */}
-        {renderContentByType()}
-
-        {/* Complete Button */}
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#0d9488',
-            borderRadius: 12,
-            paddingVertical: 16,
-            paddingHorizontal: 24,
-            alignItems: 'center',
-            marginTop: 20
-          }}
-          onPress={handleCompleteContent}
-        >
-          <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
-            Mark as Complete
+    
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
+          {/* Category Badge */}
+          <View
+            style={{
+              backgroundColor: getCategoryColor(content?.category || ''),
+              borderRadius: 20,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              alignSelf: 'flex-start',
+              marginBottom: 16,
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
+              {content?.category?.replace('_', ' ').toUpperCase()}
+            </Text>
+          </View>
+    
+          
+    
+          <Text
+            style={{
+              fontSize: 16,
+              lineHeight: 24,
+              color: '#6b7280',
+              marginBottom: 24,
+            }}
+          >
+            {content?.description}
           </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+    
+          {/* Dynamic Content */}
+          {renderContentByType()}
+    
+          {/* Complete Button */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#0d9488',
+              borderRadius: 12,
+              paddingVertical: 16,
+              paddingHorizontal: 24,
+              alignItems: 'center',
+              marginTop: 20,
+            }}
+            onPress={handleCompleteContent}
+          >
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+              Mark as Complete
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
   );
 }
