@@ -30,7 +30,7 @@ export default function Index() {
       // If user is signed in and has completed onboarding, go to main app
       if (isSignedIn && hasCompletedOnboarding && user) {
         console.log('User signed in and completed onboarding, going to main app');
-        router.replace('/(tabs)/home');
+        router.replace('/(auth)/(tabs)/home' as any);
       } else if (isSignedIn && !hasCompletedOnboarding) {
         // User is signed in but hasn't completed onboarding
         console.log('User signed in but hasn\'t completed onboarding, going to onboarding');

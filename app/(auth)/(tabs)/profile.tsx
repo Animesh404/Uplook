@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, SafeAreaView, TouchableOpacity, Alert, ScrollView, Platform, StatusBar } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useUser } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
-import { apiService } from '../services/api';
+import { apiService } from '../../services/api';
 
 type StreakInfo = {
   current_streak: number;

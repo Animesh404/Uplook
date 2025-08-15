@@ -47,20 +47,9 @@ export default function RootLayout() {
           <Stack.Screen name="sign-up" />
           <Stack.Screen name="clerk-test" />
           <Stack.Screen name="sign-in-phone" />
-          <Stack.Screen name="admin" />
           <Stack.Screen name="welcome" />
           <Stack.Screen name="onboarding" />
-          <Stack.Screen name="calculating" />
-          <Stack.Screen name="results" />
-          <Stack.Screen name="journal" />
-          <Stack.Screen name="content/[id]" />
-          <Stack.Screen 
-            name="(tabs)" 
-            options={{ 
-              headerShown: false,
-              gestureEnabled: false
-            }} 
-          />
+          <Stack.Screen name="(auth)" />
         </Stack>
       </AuthProvider>
     </ClerkProvider>

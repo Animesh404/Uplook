@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, SafeAreaView, ScrollView, Alert, Image, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { AuthGuard } from './components/AuthGuard';
+
 
 export default function ResultsScreen() {
   return <ResultsScreenContent />;
@@ -13,7 +13,7 @@ function ResultsScreenContent() {
     try {
       // User data is already saved in AuthContext from onboarding
       // Navigate to the main app with correct route
-      router.replace('/(tabs)/home');
+              router.replace('/(auth)/(tabs)/home' as any);
     } catch (error) {
       Alert.alert('Error', 'Failed to start. Please try again.');
       console.error('Start error:', error);
@@ -46,7 +46,7 @@ function ResultsScreenContent() {
             {/* Header */}
             <View className="flex-row items-center justify-center w-full mb-8">
               <Image 
-                source={require('../assets/images/logo.png')} 
+                source={require('../../assets/images/logo.png')} 
                 className="w-8 h-8"
                 resizeMode="contain"
               />

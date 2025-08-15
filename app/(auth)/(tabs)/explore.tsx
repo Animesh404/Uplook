@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import Logo from '../components/Logo';
-import { useAuth } from '../contexts/AuthContext';
+import Logo from '../../components/Logo';
+import { useAuth } from '../../contexts/AuthContext';
 import { useUser } from '@clerk/clerk-expo';
 
 type FilterTag = {
@@ -69,24 +69,24 @@ export default function ExploreScreen() {
       const primaryGoal = user.goals[0];
       if (primaryGoal.toLowerCase().includes('sleep')) {
         return [
-          { id: '1', title: 'Deep Sleep', icon: 'moon' },
-          { id: '2', title: 'Relaxation', icon: 'leaf' },
-          { id: '3', title: 'Calm Mind', icon: 'heart' },
-          { id: '4', title: 'Peaceful Night', icon: 'bed' },
+          { id: '1', title: 'Deep Sleep', icon: 'moon' as keyof typeof Ionicons.glyphMap },
+          { id: '2', title: 'Relaxation', icon: 'leaf' as keyof typeof Ionicons.glyphMap },
+          { id: '3', title: 'Calm Mind', icon: 'heart' as keyof typeof Ionicons.glyphMap },
+          { id: '4', title: 'Peaceful Night', icon: 'bed' as keyof typeof Ionicons.glyphMap },
         ];
       } else if (primaryGoal.toLowerCase().includes('meditation')) {
         return [
-          { id: '1', title: 'Mindful Sounds', icon: 'leaf' },
-          { id: '2', title: 'Zen Music', icon: 'flower' },
-          { id: '3', title: 'Breathing', icon: 'heart' },
-          { id: '4', title: 'Meditation', icon: 'moon' },
+          { id: '1', title: 'Mindful Sounds', icon: 'leaf' as keyof typeof Ionicons.glyphMap },
+          { id: '2', title: 'Zen Music', icon: 'flower' as keyof typeof Ionicons.glyphMap },
+          { id: '3', title: 'Breathing', icon: 'heart' as keyof typeof Ionicons.glyphMap },
+          { id: '4', title: 'Meditation', icon: 'moon' as keyof typeof Ionicons.glyphMap },
         ];
       } else if (primaryGoal.toLowerCase().includes('exercise')) {
         return [
-          { id: '1', title: 'Workout Mix', icon: 'fitness' },
-          { id: '2', title: 'Energy Boost', icon: 'flash' },
-          { id: '3', title: 'Motivation', icon: 'star' },
-          { id: '4', title: 'Active Life', icon: 'body' },
+          { id: '1', title: 'Workout Mix', icon: 'fitness' as keyof typeof Ionicons.glyphMap },
+          { id: '2', title: 'Energy Boost', icon: 'flash' as keyof typeof Ionicons.glyphMap },
+          { id: '3', title: 'Motivation', icon: 'star' as keyof typeof Ionicons.glyphMap },
+          { id: '4', title: 'Active Life', icon: 'body' as keyof typeof Ionicons.glyphMap },
         ];
       }
     }
@@ -148,9 +148,9 @@ export default function ExploreScreen() {
         ];
       } else if (primaryGoal.toLowerCase().includes('exercise')) {
         return [
-          { id: '1', title: 'Fitness Level', icon: 'fitness' },
-          { id: '2', title: 'Health Check', icon: 'heart' },
-          { id: '3', title: 'Activity Assessment', icon: 'body' },
+          { id: '1', title: 'Fitness Level', icon: 'fitness' as keyof typeof Ionicons.glyphMap },
+          { id: '2', title: 'Health Check', icon: 'heart' as keyof typeof Ionicons.glyphMap },
+          { id: '3', title: 'Activity Assessment', icon: 'body' as keyof typeof Ionicons.glyphMap },
         ];
       }
     }

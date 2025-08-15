@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, Image, Platform, StatusBar} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { AuthGuard } from './components/AuthGuard';
+
 
 export default function CalculatingScreen() {
   return <CalculatingScreenContent />;
@@ -61,7 +61,7 @@ function CalculatingScreenContent() {
           {/* Header */}
           <View className="flex-row items-center justify-center w-full mb-8">
             <Image 
-              source={require('../assets/images/logo.png')} 
+              source={require('../../assets/images/logo.png')} 
               className="w-8 h-8"
               resizeMode="contain"
             />

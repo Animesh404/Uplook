@@ -11,10 +11,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useAuth } from './contexts/AuthContext';
-import { AuthGuard } from './components/AuthGuard';
+import { useAuth } from '../contexts/AuthContext';
 import { useAuth as useClerkAuth } from '@clerk/clerk-expo';
-import { apiService } from './services/api';
+import { apiService } from '../services/api';
 
 type ContentItem = {
   id: number;
