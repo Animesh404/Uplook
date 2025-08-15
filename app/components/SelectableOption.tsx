@@ -20,18 +20,17 @@ export default function SelectableOption({
       onPress={onSelect}
       className={`
         flex-row items-center justify-between p-4 rounded-lg mb-3
-        ${selected ? 'bg-white border border-teal-500' : 'bg-white border border-gray-200'}
+        ${selected ? 'bg-[#DEFAF5] border border-[#002d62]' : 'bg-[#DEFAF5] border border-[#DEFAF5]'}
       `}
     >
       <View className="flex-row items-center">
         <View className={`
           w-8 h-8 rounded-full items-center justify-center mr-3
-          ${selected ? 'bg-teal-100' : 'bg-gray-100'}
         `}>
           <Ionicons 
             name={icon} 
             size={18} 
-            color={selected ? '#0d9488' : '#9ca3af'} 
+            color={'#002d62'} 
           />
         </View>
         <Text className={`
@@ -45,10 +44,10 @@ export default function SelectableOption({
       <View className={`
         w-6 h-6 rounded-full border items-center justify-center
         ${selected 
-          ? 'bg-teal-500 border-teal-500' 
-          : 'bg-white border-gray-300'}
+          ? 'bg-[#002d62] border-[#002d62]' 
+          : 'bg-[#DEFAF5] border-[#002d62]'}
       `}>
-        {selected && <Ionicons name="checkmark" size={14} color="white" />}
+        {selected && <Ionicons name="checkmark" size={14} color={"white"}/>}
       </View>
     </TouchableOpacity>
   );
