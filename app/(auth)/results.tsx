@@ -8,7 +8,8 @@ import Logo from './components/Logo';
 import { BarChart } from 'react-native-chart-kit';
 =======
 
->>>>>>> 766dd361a5e7db3bc1d7de7ce34f1e9639a797ed:app/(auth)/results.tsx
+import Logo from '../components/Logo';
+import { BarChart } from 'react-native-chart-kit';
 
 export default function ResultsScreen() {
   return <ResultsScreenContent />;
@@ -65,17 +66,8 @@ function ResultsScreenContent() {
           <View className="px-6 pt-4 pb-8">
             {/* Header */}
             <View className="flex-row items-center justify-center w-full mb-8">
-<<<<<<< HEAD:app/results.tsx
               <Logo size="small" />
               <Text className="text-[#2C3E50] text-[18px] font-medium">Uplook</Text>
-=======
-              <Image 
-                source={require('../../assets/images/logo.png')} 
-                className="w-8 h-8"
-                resizeMode="contain"
-              />
-              <Text className="ml-2 text-teal-600 font-semibold text-lg">Uplook</Text>
->>>>>>> 766dd361a5e7db3bc1d7de7ce34f1e9639a797ed:app/(auth)/results.tsx
             </View>
 
             {/* Main Content */}
