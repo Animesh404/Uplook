@@ -120,7 +120,7 @@ export default function OnboardingThree() {
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 
   return (
-    <View className="flex-1 bg-cyan-50 px-4">
+    <View className="flex-1 bg-[#F0FFFF] px-4">
   {/* Header */}
   <View style={{ paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16 }}>
     <ProgressHeader
@@ -131,7 +131,8 @@ export default function OnboardingThree() {
   </View>
 
   {/* Bottom sheet style container */}
-  <View className="flex-1 bg-teal-200 rounded-t-3xl overflow-hidden -mx-4">
+  <View className="flex-1 bg-[#FFFFFF] rounded-t-3xl overflow-hidden shadow-lg -mx-4">
+  <View className="flex-1 bg-[#B7F2F1] rounded-t-3xl overflow-hidden ">
     <ScrollView
       showsVerticalScrollIndicator={false}
       bounces={false}
@@ -155,16 +156,20 @@ export default function OnboardingThree() {
       ))}
 
 
-      <View className="mt-6">
+      <View className="mb-4 mt-4">
+        <Button 
+          label="Complete Setup" 
+          onPress={handleContinue} 
+          variant="primary" 
+        />
+      </View>
 
-      <View className= "mb-4">
-      <Button label="Complete Setup" onPress={handleContinue} />
-                      </View>
-        
-
-                      <TouchableOpacity className="bg-cyan-300/60 rounded-2xl py-4 px-6" onPress={handleSkip}>
-                      <Text className="text-center text-blue-900 font-semibold text-lg">Skip</Text>
-                    </TouchableOpacity>
+      <View className="mb-4">
+        <Button 
+          label="Skip" 
+          onPress={handleSkip} 
+          variant="secondary" 
+        />
       </View>
 
       <View className="mt-6 p-4 bg-white rounded-lg">
@@ -185,6 +190,8 @@ export default function OnboardingThree() {
       </View>
     </ScrollView>
   </View>
+  </View>
+  
 </View>
 
   );

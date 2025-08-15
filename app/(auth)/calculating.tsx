@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, Image, Platform, StatusBar} from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import Logo from './components/Logo';
 
 export default function CalculatingScreen() {
   return <CalculatingScreenContent />;
@@ -52,20 +53,16 @@ function CalculatingScreenContent() {
     router.push('/results');
   };
 
-  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
-
   return (
-    <SafeAreaView className="flex-1 bg-cyan-50">
-      <View className="flex-1 bg-gradient-to-b from-cyan-50 to-teal-100" style={{  paddingTop: Platform.OS === 'android' ? statusBarHeight + 16 : 16   }}>
+    <SafeAreaView className="flex-1 bg-[#F0FFFF] edges={['top']}">
+      <View className="flex-1 bg-gradient-to-b from-cyan-50 to-teal-100 px-6 pt-8" >
         <View className="flex-1 px-6 pt-4">
           {/* Header */}
-          <View className="flex-row items-center justify-center w-full mb-8">
-            <Image 
-              source={require('../../assets/images/logo.png')} 
-              className="w-8 h-8"
-              resizeMode="contain"
-            />
-            <Text className="ml-2 text-teal-600 font-semibold text-lg">Uplook</Text>
+          <View className="flex-row items-center justify-center w-full">
+            <Logo size="small" />
+            <Text className="text-[#2C3E50] text-[18px] font-medium">
+              Uplook
+            </Text>
           </View>
           
           <View className="flex-1 items-center justify-center">
