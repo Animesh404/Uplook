@@ -33,7 +33,7 @@ export default function TestOnboardingScreen() {
       await completeOnboarding(testData);
       
       Alert.alert('Success', 'Onboarding completed successfully!');
-      router.replace('/(tabs)/home');
+              router.replace('/(auth)/(tabs)/home' as any);
     } catch (error) {
       console.error('Test failed:', error);
       Alert.alert('Error', 'Test failed: ' + (error as Error).message);
@@ -98,7 +98,7 @@ export default function TestOnboardingScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/home')}
+          onPress={() => router.push('/(auth)/(tabs)/home' as any)}
           className="bg-green-500 rounded-lg p-4 mb-4"
         >
           <Text className="text-white font-medium text-center">

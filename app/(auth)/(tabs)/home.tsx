@@ -12,11 +12,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from 'expo-router';
-import Logo from "../components/Logo";
-import ChatModal from "../components/ChatModal";
-import { useAuth } from '../contexts/AuthContext';
+import Logo from "../../components/Logo";
+import ChatModal from "../../components/ChatModal";
+import { useAuth } from '../../contexts/AuthContext';
 import { useUser } from '@clerk/clerk-expo';
-import { apiService, UserAgenda, AgendaItem } from '../services/api';
+import { apiService, UserAgenda, AgendaItem } from '../../services/api';
 
 const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 
@@ -76,10 +76,10 @@ export default function HomeScreen() {
   };
 
   const activityBackgroundImages = [
-    require('../../assets/images/gratitude.jpeg'),
-    require('../../assets/images/meditate.jpeg'),
-    require('../../assets/images/learning.jpeg'),
-    require('../../assets/images/quiz.jpeg'),
+    require('../../../assets/images/gratitude.jpeg'),
+    require('../../../assets/images/meditate.jpeg'),
+    require('../../../assets/images/learning.jpeg'),
+    require('../../../assets/images/quiz.jpeg'),
   ];
 
   // Get personalized activities based on user goals
@@ -435,7 +435,7 @@ export default function HomeScreen() {
                           overflow: 'hidden',
                         }}>
                           <ImageBackground
-                            source={{ uri: item.thumbnail_url || require('../../assets/images/mindful.jpeg') }}
+                            source={{ uri: item.thumbnail_url || require('../../../assets/images/mindful.jpeg') }}
                             style={{
                               flex: 1,
                               justifyContent: "flex-end",
@@ -524,7 +524,7 @@ export default function HomeScreen() {
                             overflow: 'hidden',
                           }}>
                             <ImageBackground
-                              source={{ uri: item.thumbnail_url || require('../../assets/images/reflection.jpeg') }}
+                              source={{ uri: item.thumbnail_url || require('../../../assets/images/reflection.jpeg') }}
                               style={{
                                 flex: 1,
                                 justifyContent: "center",

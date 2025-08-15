@@ -22,7 +22,7 @@ export default function AuthScreen() {
     if (isSignedIn && user) {
       if (hasCompletedOnboarding) {
         console.log('User signed in and completed onboarding, going to main app');
-        router.replace('/(tabs)/home');
+        router.replace('/(auth)/(tabs)/home' as any);
       } else {
         console.log('User signed in but hasn\'t completed onboarding, going to onboarding');
         router.replace('/onboarding/one');

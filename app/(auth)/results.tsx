@@ -2,8 +2,13 @@ import React from 'react';
 import { View, Text, SafeAreaView, ScrollView, Alert, TouchableOpacity, Platform, StatusBar, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+<<<<<<< HEAD:app/results.tsx
 import { AuthGuard } from './components/AuthGuard';
 import Logo from './components/Logo';
+import { BarChart } from 'react-native-chart-kit';
+=======
+
+import Logo from '../components/Logo';
 import { BarChart } from 'react-native-chart-kit';
 
 export default function ResultsScreen() {
@@ -13,7 +18,13 @@ export default function ResultsScreen() {
 function ResultsScreenContent() {
   const handleStartToday = async () => {
     try {
+<<<<<<< HEAD:app/results.tsx
       router.replace('/(tabs)/home');
+=======
+      // User data is already saved in AuthContext from onboarding
+      // Navigate to the main app with correct route
+              router.replace('/(auth)/(tabs)/home' as any);
+>>>>>>> 766dd361a5e7db3bc1d7de7ce34f1e9639a797ed:app/(auth)/results.tsx
     } catch (error) {
       Alert.alert('Error', 'Failed to start. Please try again.');
       console.error('Start error:', error);
