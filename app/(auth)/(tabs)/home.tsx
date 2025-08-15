@@ -260,27 +260,11 @@ export default function HomeScreen() {
   return (
     <Screen>
       <ScrollView>
-        <View style={{ padding: 20, paddingBottom: 32 }}>
+        <View className="px-6 pb-8" >
           {/* Header */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 24,
-            }}
-          >
+          <View className="flex-row items-center justify-center w-full mb-8">
             <Logo size="small" />
-            <Text
-              style={{
-                marginLeft: 8,
-                color: "#0f766e",
-                fontWeight: "500",
-                fontSize: 16,
-              }}
-            >
-              Uplook
-            </Text>
+            <Text className="text-[#2C3E50] text-[18px] font-medium">Uplook</Text>
           </View>
 
           {/* Welcome Card */}
