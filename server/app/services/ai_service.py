@@ -80,7 +80,6 @@ class AIService:
             .filter(
                 JournalEntry.user_id == user_id,
                 JournalEntry.created_at >= cutoff_date,
-                JournalEntry.sentiment_score.isnot(None),
             )
             .order_by(JournalEntry.created_at)
             .all()
@@ -88,10 +87,12 @@ class AIService:
 
         trends = []
         for entry in entries:
+            # Calculate sentiment score on the fly since the field doesn't exist
+            sentiment_score = self.analyze_journal_sentiment(entry.entry_text)
             trends.append(
                 {
                     "date": entry.created_at.date().isoformat(),
-                    "sentiment_score": entry.sentiment_score,
+                    "sentiment_score": sentiment_score,
                     "entry_length": len(entry.entry_text),
                 }
             )

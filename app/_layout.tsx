@@ -49,9 +49,7 @@ export default function RootLayout() {
           <Stack.Screen name="sign-in-phone" />
           <Stack.Screen name="admin" />
           <Stack.Screen name="welcome" />
-          <Stack.Screen name="onboarding/one" />
-          <Stack.Screen name="onboarding/two" />
-          <Stack.Screen name="onboarding/three" />
+          <Stack.Screen name="onboarding" />
           <Stack.Screen name="calculating" />
           <Stack.Screen name="results" />
           <Stack.Screen name="journal" />

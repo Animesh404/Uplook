@@ -254,6 +254,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         await login(newUser);
+        try {
+          await apiService.createUserPlans();
+        } catch (planError) {
+          console.warn('Failed to create user plans:', planError);
+        }
       } catch (backendError) {
         // const token = await getToken?.({ template: 'supabase' });
         // console.log("token", token);
@@ -272,6 +277,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         await login(newUser);
+        try {
+          await apiService.createUserPlans();
+        } catch (planError) {
+          console.warn('Failed to create user plans:', planError);
+        }
       }
     } catch (error) {
       console.error('Error completing onboarding:', error);

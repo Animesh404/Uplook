@@ -18,13 +18,19 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     if (!isLoading) {
       if (!isSignedIn) {
         console.log('AuthGuard: User not signed in, redirecting to auth');
-        router.replace('/auth');
+        // Use setTimeout to ensure navigation context is ready
+        setTimeout(() => {
+          router.replace('/auth');
+        }, 100);
         return;
       }
 
       if (requireOnboarding && !hasCompletedOnboarding) {
         console.log('AuthGuard: User hasn\'t completed onboarding, redirecting to onboarding');
-        router.replace('/onboarding/one');
+        // Use setTimeout to ensure navigation context is ready
+        setTimeout(() => {
+          router.replace('/onboarding/one');
+        }, 100);
         return;
       }
     }

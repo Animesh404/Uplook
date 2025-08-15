@@ -5,8 +5,7 @@ import { AuthGuard } from "../components/AuthGuard";
 
 export default function TabLayout() {
   return (
-    <AuthGuard requireOnboarding={true}>
-      <Tabs
+    <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#0d9488", // teal-600
@@ -78,6 +77,5 @@ export default function TabLayout() {
         }}
       />
       </Tabs>
-    </AuthGuard>
   );
 }
