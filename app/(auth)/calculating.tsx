@@ -3,7 +3,7 @@ import { View, Text, SafeAreaView, TouchableOpacity} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-import Logo from './components/Logo';
+import Logo from '../components/Logo';
 
 export default function CalculatingScreen() {
   return <CalculatingScreenContent />;

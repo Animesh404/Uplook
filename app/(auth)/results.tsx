@@ -3,7 +3,7 @@ import { View, Text, SafeAreaView, ScrollView, Alert, TouchableOpacity, Platform
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-import Logo from './components/Logo';
+import Logo from '../components/Logo';
 import { BarChart } from 'react-native-chart-kit';
 
 export default function ResultsScreen() {
