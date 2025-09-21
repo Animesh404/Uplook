@@ -84,6 +84,7 @@ export default function HomeScreen() {
 
   // Get personalized activities based on user goals
   const getPersonalizedActivities = (): string[] => {
+    
     const defaultActivities = [
       "Fill out gratitude journal",
       "Meditate",
@@ -260,7 +261,7 @@ export default function HomeScreen() {
   return (
     <Screen>
       <ScrollView>
-        <View className="px-6 pb-8" >
+        <View className="px-6 pb-2 mt-0 " >
           {/* Header */}
           <View className="flex-row items-center justify-center w-full mb-8">
             <Logo size="small" />

@@ -1,4 +1,4 @@
-# Uplook Wellness API
+npm install -g ngroknpm install -g ngrok# Uplook Wellness API
 
 A comprehensive FastAPI backend for the Uplook wellness application, featuring AI-powered mood analysis, personalized recommendations, and real-time chat functionality.
 
