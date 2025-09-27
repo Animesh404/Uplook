@@ -1,5 +1,5 @@
 // API service for communicating with the backend
-const API_BASE_URL = 'https://4e7f9a2aaa7d.ngrok-free.app'; // Change this to your actual backend URL
+const API_BASE_URL = 'https://07d35533190d.ngrok-free.app'; // Change this to your actual backend URL
 
 // Feature flags for development
 const USE_MOCK_DATA = false; // Set to false to use backend API
