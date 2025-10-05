@@ -108,3 +108,25 @@ async def get_categories():
 async def get_content_types():
     """Get all available content types"""
     return [content_type.value for content_type in ContentTypeEnum]
+
+@router.post("/seed")
+async def seed_content(db: Session = Depends(get_db)):
+    contents = [
+        Content(
+            title="Morning Meditation",
+            description="Start your day with mindfulness.",
+            content_type="meditation",
+            category="anxiety",
+            url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        ),
+        Content(
+            title="Relaxing Sleep Music",
+            description="Unwind with calming tunes.",
+            content_type="music",
+            category="sleep",
+            url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+        )
+    ]
+    db.add_all(contents)
+    db.commit()
+    return {"status": "ok", "count": len(contents)}

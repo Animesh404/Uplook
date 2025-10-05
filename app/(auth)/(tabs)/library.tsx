@@ -342,7 +342,7 @@ export default function LibraryScreen() {
                         {/* Bottom text */}
                         <View style={{ 
                           position: 'absolute', 
-                          bottom: -50, 
+                          bottom: -40, 
                           left: -50, 
                           right: -50,
                         }}>
