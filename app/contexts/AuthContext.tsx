@@ -58,117 +58,108 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isSignedIn, clerkUser]);
 
   const checkAuthState = async () => {
-    try {
-      console.log('Checking auth state:', { isSignedIn, clerkUserId: clerkUser?.id });
+  try {
+    console.log('Checking auth state:', { isSignedIn, clerkUserId: clerkUser?.id });
+    
+    if (isSignedIn && clerkUser) {
+      console.log('User is signed in with Clerk:', clerkUser.id);
       
-      if (isSignedIn && clerkUser) {
-        console.log('User is signed in with Clerk:', clerkUser.id);
-        
-        // Check if user has completed onboarding
-        const onboardingStatus = await AsyncStorage.getItem('onboarding_complete');
-        const userData = await AsyncStorage.getItem('user_data');
-        
-        console.log('Onboarding status:', onboardingStatus);
-        console.log('User data exists:', !!userData);
-        
-        if (onboardingStatus === 'true' && userData) {
-          // User has completed onboarding
-          console.log('User has completed onboarding');
-          const parsedUser: User = JSON.parse(userData);
-
-          // Merge role from Clerk public metadata if not present in storage
-          const clerkRole = (clerkUser.publicMetadata as any)?.role as
-            | 'USER'
-            | 'ADMIN'
-            | 'SUPER_ADMIN'
-            | undefined;
-
-          let mergedUser: User = parsedUser;
-          if (!parsedUser.role && clerkRole) {
-            mergedUser = { ...parsedUser, role: clerkRole };
-            try {
-              await AsyncStorage.setItem('user_data', JSON.stringify(mergedUser));
-            } catch (persistErr) {
-              console.warn('Failed to persist merged user role:', persistErr);
-            }
-          }
-
-          // Try to fetch role from backend profile if we have a token
-          try {
-            const token = await getToken?.();
-            if (!token) throw new Error('No auth token for /users/me');
-            const profile = await apiService.getUserProfile();
-            const backendRole = (profile as any)?.role as
-              | 'USER'
-              | 'ADMIN'
-              | 'SUPER_ADMIN'
-              | undefined;
-            if (backendRole && backendRole !== mergedUser.role) {
-              mergedUser = { ...mergedUser, role: backendRole };
-              await AsyncStorage.setItem('user_data', JSON.stringify(mergedUser));
-            }
-          } catch (profileErr) {
-            // If fetching profile fails but we do have a token, attempt to upsert the user via onboarding API
-            try {
-              const token = await getToken?.();
-              if (token) {
-                const onboardingData: OnboardingData = {
-                  fullName: mergedUser.fullName,
-                  email: mergedUser.email,
-                  age: parseInt(mergedUser.age || '0'),
-                  goals: mergedUser.goals || [],
-                  reminderTimes: mergedUser.reminderTimes || [],
-                };
-                await apiService.completeOnboarding(onboardingData);
-                // Try profile again to pick up role
-                const profile = await apiService.getUserProfile();
-                const backendRole = (profile as any)?.role as
-                  | 'USER'
-                  | 'ADMIN'
-                  | 'SUPER_ADMIN'
-                  | undefined;
-                if (backendRole && backendRole !== mergedUser.role) {
-                  mergedUser = { ...mergedUser, role: backendRole };
-                  await AsyncStorage.setItem('user_data', JSON.stringify(mergedUser));
-                }
-              }
-            } catch {
-              console.log('Profile fetch failed or skipped; using local/clerk role if any');
-            }
-          }
-
-          setUser(mergedUser);
-          setHasCompletedOnboarding(true);
-        } else {
-          // User is signed in but hasn't completed onboarding
-          console.log('User signed in but hasn\'t completed onboarding');
-          setHasCompletedOnboarding(false);
+      // First, try to get user data from backend
+      try {
+        const token = await getToken?.();
+        if (token) {
+          console.log('Fetching user profile from backend...');
+          const profile = await apiService.getUserProfile();
           
-          // Create a temporary user object from Clerk data
-          const tempUser: User = {
-            id: clerkUser.id,
-            fullName: clerkUser.fullName || '',
-            email: clerkUser.primaryEmailAddress?.emailAddress || '',
-            age: '',
-            goals: [],
-            reminderTimes: [],  
-            onboarded: false,
-            role: (clerkUser.publicMetadata as any)?.role as any,
-          };
-          setUser(tempUser);
+          // If backend returns user data with onboarded status
+          if (profile && (profile as any).onboarded) {
+            console.log('User has completed onboarding (from backend)');
+            
+            const backendUser: User = {
+              id: (profile as any).id?.toString() || clerkUser.id,
+              fullName: (profile as any).full_name || clerkUser.fullName || '',
+              email: (profile as any).email || clerkUser.primaryEmailAddress?.emailAddress || '',
+              age: (profile as any).age?.toString() || '',
+              goals: (profile as any).goals || [],
+              reminderTimes: (profile as any).reminder_times || [],
+              onboarded: true,
+              role: (profile as any)?.role as any,
+            };
+            
+            // Save to local storage for offline access
+            await AsyncStorage.setItem('user_data', JSON.stringify(backendUser));
+            await AsyncStorage.setItem('onboarding_complete', 'true');
+            
+            setUser(backendUser);
+            setHasCompletedOnboarding(true);
+            return;
+          }
         }
-      } else {
-        // User is not signed in
-        console.log('User is not signed in');
-        setUser(null);
-        setHasCompletedOnboarding(false);
+      } catch (backendError) {
+        console.log('Could not fetch from backend, checking local storage:', backendError);
       }
-    } catch (error) {
-      console.error('Error checking auth state:', error);
-    } finally {
-      setIsLoading(false);
+      
+      // Fallback: Check local storage
+      const onboardingStatus = await AsyncStorage.getItem('onboarding_complete');
+      const userData = await AsyncStorage.getItem('user_data');
+      
+      console.log('Onboarding status (local):', onboardingStatus);
+      console.log('User data exists (local):', !!userData);
+      
+      if (onboardingStatus === 'true' && userData) {
+        // User has completed onboarding (from local storage)
+        console.log('User has completed onboarding (from local storage)');
+        const parsedUser: User = JSON.parse(userData);
+
+        // Merge role from Clerk public metadata if not present in storage
+        const clerkRole = (clerkUser.publicMetadata as any)?.role as
+          | 'USER'
+          | 'ADMIN'
+          | 'SUPER_ADMIN'
+          | undefined;
+
+        let mergedUser: User = parsedUser;
+        if (!parsedUser.role && clerkRole) {
+          mergedUser = { ...parsedUser, role: clerkRole };
+          try {
+            await AsyncStorage.setItem('user_data', JSON.stringify(mergedUser));
+          } catch (persistErr) {
+            console.warn('Failed to persist merged user role:', persistErr);
+          }
+        }
+
+        setUser(mergedUser);
+        setHasCompletedOnboarding(true);
+      } else {
+        // User is signed in but hasn't completed onboarding
+        console.log('User signed in but hasn\'t completed onboarding');
+        setHasCompletedOnboarding(false);
+        
+        // Create a temporary user object from Clerk data
+        const tempUser: User = {
+          id: clerkUser.id,
+          fullName: clerkUser.fullName || '',
+          email: clerkUser.primaryEmailAddress?.emailAddress || '',
+          age: '',
+          goals: [],
+          reminderTimes: [],  
+          onboarded: false,
+          role: (clerkUser.publicMetadata as any)?.role as any,
+        };
+        setUser(tempUser);
+      }
+    } else {
+      // User is not signed in
+      console.log('User is not signed in');
+      setUser(null);
+      setHasCompletedOnboarding(false);
     }
-  };
+  } catch (error) {
+    console.error('Error checking auth state:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const clearSession = async () => {
     try {

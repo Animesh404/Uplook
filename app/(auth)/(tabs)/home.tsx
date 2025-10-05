@@ -261,7 +261,7 @@ export default function HomeScreen() {
   return (
     <Screen>
       <ScrollView>
-        <View className="px-6 pb-2 mt-0 " >
+        <View className="px-6 pb-2  " >
           {/* Header */}
           <View className="flex-row items-center justify-center w-full mb-8">
             <Logo size="small" />
@@ -420,7 +420,11 @@ export default function HomeScreen() {
                           overflow: 'hidden',
                         }}>
                           <ImageBackground
-                            source={{ uri: item.thumbnail_url || require('../../../assets/images/mindful.jpeg') }}
+                            source={
+                              item.thumbnail_url 
+                                ? { uri: String(item.thumbnail_url) } 
+                                : require('../../../assets/images/mindful.jpeg')
+                            }
                             style={{
                               flex: 1,
                               justifyContent: "flex-end",
@@ -509,7 +513,11 @@ export default function HomeScreen() {
                             overflow: 'hidden',
                           }}>
                             <ImageBackground
-                              source={{ uri: item.thumbnail_url || require('../../../assets/images/reflection.jpeg') }}
+                              source={
+                                item.thumbnail_url 
+                                  ? { uri: String(item.thumbnail_url) } 
+                                  : require('../../../assets/images/reflection.jpeg')
+                              }
                               style={{
                                 flex: 1,
                                 justifyContent: "center",
